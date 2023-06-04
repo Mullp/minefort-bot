@@ -4,7 +4,7 @@ import {DiscordClient} from '../client/DiscordClient';
 
 export class Event<K extends keyof ClientEvents> implements IEvent<K> {
   public readonly enabled?: boolean;
-  public readonly name: K;
+  public readonly event: K;
   public readonly once: boolean;
   public readonly execute: (
     client: DiscordClient,
@@ -13,7 +13,7 @@ export class Event<K extends keyof ClientEvents> implements IEvent<K> {
 
   constructor(options: IEvent<K>) {
     this.enabled = options.enabled;
-    this.name = options.name;
+    this.event = options.event;
     this.once = options.once;
     this.execute = options.execute;
   }

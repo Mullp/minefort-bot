@@ -47,8 +47,8 @@ export class DiscordClient extends Client implements IDiscordClient {
 
       if (event.enabled === false) return;
 
-      this.events.set(event.name, event);
-      this[event.once ? 'once' : 'on'](event.name, (...args) =>
+      this.events.set(event.event, event);
+      this[event.once ? 'once' : 'on'](event.event, (...args) =>
         event.execute(this, ...args)
       );
       console.log('[SUCCESS]', file, 'event file loaded.');
