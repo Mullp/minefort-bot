@@ -1,5 +1,5 @@
 {
-  "name": "",
+  "name": "minefort-bot",
   "version": "0.0.0",
   "description": "",
   "main": "build/src/index.js",
@@ -15,9 +15,8 @@
     "clean": "gts clean",
     "compile": "tsc",
     "fix": "gts fix",
-    "prepare": "yarn.cmd run compile",
-    "pretest": "yarn.cmd run compile",
-    "posttest": "yarn.cmd run lint"
+    "start": "node build/src/index.js",
+    "start:dev": "yarn run clean && yarn run compile && yarn run start"
   },
   "devDependencies": {
     "@types/node": "^18.0.0",

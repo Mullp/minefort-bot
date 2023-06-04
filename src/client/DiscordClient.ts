@@ -3,6 +3,8 @@ import {IDiscordClient} from './IDiscordClient';
 import {Command} from '../commands/Command';
 import {Modal} from '../modals/Modal';
 import {Event} from '../events/Event';
+import {join} from 'path';
+import {readdirSync} from 'fs';
 
 export class DiscordClient extends Client implements IDiscordClient {
   public readonly commands: Collection<string, Command>;
@@ -16,15 +18,31 @@ export class DiscordClient extends Client implements IDiscordClient {
     this.modals = new Collection();
   }
 
-  registerCommands(): Promise<void> {
+  public async registerCommands(): Promise<void> {
     return Promise.resolve(undefined);
   }
 
-  registerEvents(): Promise<void> {
-    return Promise.resolve(undefined);
+  public async registerEvents(): Promise<void> {
+    const eventsPath = join(__dirname, '../events/events');
+    const eventFiles = readdirSync(eventsPath).filter(file =>
+      file.endsWith('.js')
+    );
+
+    for (const file of eventFiles) {
+      const filePath = join(eventsPath, file);
+      const event = (await import(filePath)).default;
+
+      if (event.enabled === false) return;
+
+      this.events.set(event.name, event);
+      this[event.once ? 'once' : 'on'](event.name, (...args) =>
+        event.execute(this, ...args)
+      );
+      console.log('[SUCCESS]', file, 'event file loaded.');
+    }
   }
 
-  registerModals(): Promise<void> {
+  public async registerModals(): Promise<void> {
     return Promise.resolve(undefined);
   }
 }

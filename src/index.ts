@@ -1,5 +1,6 @@
 import {DiscordClient} from './client/DiscordClient';
 import {GatewayIntentBits} from 'discord-api-types/v10';
+import {env} from './utils/env';
 
 const client = new DiscordClient({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],
@@ -10,5 +11,5 @@ const client = new DiscordClient({
   await client.registerEvents();
   await client.registerModals();
 
-  await client.login(process.env.TOKEN!);
+  await client.login(env.TOKEN);
 })();
