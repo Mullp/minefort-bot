@@ -19,7 +19,20 @@ export class DiscordClient extends Client implements IDiscordClient {
   }
 
   public async registerCommands(): Promise<void> {
-    return Promise.resolve(undefined);
+    const commandsPath = join(__dirname, '../commands/commands');
+    const commandFiles = readdirSync(commandsPath).filter(file =>
+      file.endsWith('.js')
+    );
+
+    for (const file of commandFiles) {
+      const filePath = join(commandsPath, file);
+      const command: Command = (await import(filePath)).default;
+
+      if (command.enabled === false) return;
+
+      this.commands.set(command.data.name, command);
+      console.log('[SUCCESS]', file, 'command file loaded.');
+    }
   }
 
   public async registerEvents(): Promise<void> {
@@ -30,7 +43,7 @@ export class DiscordClient extends Client implements IDiscordClient {
 
     for (const file of eventFiles) {
       const filePath = join(eventsPath, file);
-      const event = (await import(filePath)).default;
+      const event: Event<keyof ClientEvents> = (await import(filePath)).default;
 
       if (event.enabled === false) return;
 
@@ -43,6 +56,21 @@ export class DiscordClient extends Client implements IDiscordClient {
   }
 
   public async registerModals(): Promise<void> {
-    return Promise.resolve(undefined);
+    const modalsPath = join(__dirname, '../modals/modals');
+    const modalFiles = readdirSync(modalsPath).filter(file =>
+      file.endsWith('.js')
+    );
+
+    for (const file of modalFiles) {
+      const filePath = join(modalsPath, file);
+      const modal: Modal = (await import(filePath)).default;
+
+      if (modal.enabled === false) return;
+
+      if (modal.data.data.custom_id) {
+        this.modals.set(modal.data.data.custom_id, modal);
+        console.log('[SUCCESS]', file, 'modal file loaded.');
+      }
+    }
   }
 }
