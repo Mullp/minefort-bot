@@ -1,0 +1,33 @@
+{
+  "name": "",
+  "version": "0.0.0",
+  "description": "",
+  "main": "build/src/index.js",
+  "types": "build/src/index.d.ts",
+  "files": [
+    "build/src"
+  ],
+  "license": "Apache-2.0",
+  "keywords": [],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "gts lint",
+    "clean": "gts clean",
+    "compile": "tsc",
+    "fix": "gts fix",
+    "prepare": "yarn.cmd run compile",
+    "pretest": "yarn.cmd run compile",
+    "posttest": "yarn.cmd run lint"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "gts": "^4.0.1",
+    "typescript": "~4.9.0"
+  },
+  "dependencies": {
+    "discord-api-types": "^0.37.43",
+    "discord.js": "^14.11.0",
+    "dotenv": "^16.1.4",
+    "minefort": "^4.2.0"
+  }
+}
