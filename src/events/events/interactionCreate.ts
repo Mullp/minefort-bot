@@ -13,10 +13,12 @@ export default new Event({
         await command.execute(client, interaction);
       } catch (error) {
         console.error(error);
-        await interaction.reply({
-          content: 'There was an error',
-          ephemeral: true,
-        });
+        await interaction
+          .reply({
+            content: 'There was an error',
+            ephemeral: true,
+          })
+          .catch(console.error);
       }
     } else if (interaction.isAutocomplete()) {
       const command = client.commands.get(interaction.commandName);
@@ -35,10 +37,12 @@ export default new Event({
         await modal.execute(client, interaction);
       } catch (error) {
         console.error(error);
-        await interaction.reply({
-          content: 'There was an error',
-          ephemeral: true,
-        });
+        await interaction
+          .reply({
+            content: 'There was an error',
+            ephemeral: true,
+          })
+          .catch(console.error);
       }
     }
   },

@@ -46,26 +46,22 @@ export default new Command({
 
     const playersFormatted = new Intl.ListFormat('en-us', {
       style: 'long',
-    }).format(
-      (
-        await Promise.all(
-          (server.playerData.online ?? []).map(uuid =>
-            PlayerUtils.getPlayer(uuid).then(player => player?.name)
+    })
+      .format(
+        (
+          await Promise.all(
+            (server.playerData.online ?? []).map(uuid =>
+              PlayerUtils.getPlayer(uuid).then(player => player?.name)
+            )
           )
         )
+          .filter((name): name is string => !!name)
+          .map(name => hyperlink(name, `https://namemc.com/${name}`))
       )
-        .filter((name): name is string => !!name)
-        .map(name =>
-          hyperlink(
-            name,
-            `https://namemc.com/${name}`,
-            `Click to view ${name} on NameMC`
-          )
-        )
-    );
+      .substring(0, 1024);
 
     const serverEmbed = new EmbedBuilder()
-      .setColor('#00ffca')
+      .setColor('#ff03a7')
       .setAuthor({
         name: server.name,
         iconURL: server.icon.image,
