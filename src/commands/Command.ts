@@ -5,7 +5,7 @@ import {
   SlashCommandBuilder,
   SlashCommandSubcommandsOnlyBuilder,
 } from 'discord.js';
-import {DiscordClient} from '../client/DiscordClient';
+import {DiscordClient} from '../client/discord/DiscordClient';
 
 export class Command implements ICommand {
   public readonly enabled?: boolean;

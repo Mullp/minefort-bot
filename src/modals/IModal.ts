@@ -1,5 +1,5 @@
 import {ModalBuilder, ModalSubmitInteraction} from 'discord.js';
-import {DiscordClient} from '../client/DiscordClient';
+import {DiscordClient} from '../client/discord/DiscordClient';
 
 export interface IModal {
   enabled?: boolean;

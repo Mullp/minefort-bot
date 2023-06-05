@@ -1,6 +1,6 @@
 import {IEvent} from './IEvent';
 import {ClientEvents} from 'discord.js';
-import {DiscordClient} from '../client/DiscordClient';
+import {DiscordClient} from '../client/discord/DiscordClient';
 
 export class Event<K extends keyof ClientEvents> implements IEvent<K> {
   public readonly enabled?: boolean;

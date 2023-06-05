@@ -1,8 +1,14 @@
-import {Client, ClientEvents, ClientOptions, Collection} from 'discord.js';
+import {
+  ApplicationCommandOptionChoiceData,
+  Client,
+  ClientEvents,
+  ClientOptions,
+  Collection,
+} from 'discord.js';
 import {IDiscordClient} from './IDiscordClient';
-import {Command} from '../commands/Command';
-import {Modal} from '../modals/Modal';
-import {Event} from '../events/Event';
+import {Command} from '../../commands/Command';
+import {Modal} from '../../modals/Modal';
+import {Event} from '../../events/Event';
 import {join} from 'path';
 import {readdirSync} from 'fs';
 
@@ -19,7 +25,7 @@ export class DiscordClient extends Client implements IDiscordClient {
   }
 
   public async registerCommands(): Promise<void> {
-    const commandsPath = join(__dirname, '../commands/commands');
+    const commandsPath = join(__dirname, '../../commands/commands');
     const commandFiles = readdirSync(commandsPath).filter(file =>
       file.endsWith('.js')
     );
@@ -36,7 +42,7 @@ export class DiscordClient extends Client implements IDiscordClient {
   }
 
   public async registerEvents(): Promise<void> {
-    const eventsPath = join(__dirname, '../events/events');
+    const eventsPath = join(__dirname, '../../events/events');
     const eventFiles = readdirSync(eventsPath).filter(file =>
       file.endsWith('.js')
     );
@@ -56,7 +62,7 @@ export class DiscordClient extends Client implements IDiscordClient {
   }
 
   public async registerModals(): Promise<void> {
-    const modalsPath = join(__dirname, '../modals/modals');
+    const modalsPath = join(__dirname, '../../modals/modals');
     const modalFiles = readdirSync(modalsPath).filter(file =>
       file.endsWith('.js')
     );
@@ -72,5 +78,20 @@ export class DiscordClient extends Client implements IDiscordClient {
         console.log('[SUCCESS]', file, 'modal file loaded.');
       }
     }
+  }
+
+  public sortAutocompleteChoices(
+    choices: ApplicationCommandOptionChoiceData[],
+    value: string
+  ) {
+    return choices
+      .filter(choice => choice.name.toLowerCase().includes(value.toLowerCase()))
+      .sort((a, b) =>
+        a.name.toLowerCase().startsWith(value.toLowerCase()) &&
+        !b.name.toLowerCase().startsWith(value.toLowerCase())
+          ? -1
+          : 1
+      )
+      .filter((_, index) => index < 25);
   }
 }

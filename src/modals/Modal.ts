@@ -1,6 +1,6 @@
 import {IModal} from './IModal';
 import {ModalBuilder, ModalSubmitInteraction} from 'discord.js';
-import {DiscordClient} from '../client/DiscordClient';
+import {DiscordClient} from '../client/discord/DiscordClient';
 
 export class Modal implements IModal {
   public readonly enabled?: boolean;

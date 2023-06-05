@@ -4,7 +4,7 @@ import {
   SlashCommandBuilder,
   SlashCommandSubcommandsOnlyBuilder,
 } from 'discord.js';
-import {DiscordClient} from '../client/DiscordClient';
+import {DiscordClient} from '../client/discord/DiscordClient';
 
 export interface ICommand {
   enabled?: boolean;
