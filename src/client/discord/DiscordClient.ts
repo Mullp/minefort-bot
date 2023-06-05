@@ -4,7 +4,8 @@ import {
   ClientEvents,
   ClientOptions,
   Collection,
-} from 'discord.js';
+  EmbedBuilder, Interaction
+} from "discord.js";
 import {IDiscordClient} from './IDiscordClient';
 import {Command} from '../../commands/Command';
 import {Modal} from '../../modals/Modal';
@@ -22,6 +23,18 @@ export class DiscordClient extends Client implements IDiscordClient {
     this.commands = new Collection();
     this.events = new Collection();
     this.modals = new Collection();
+  }
+
+  public getBaseEmbed(interaction: Interaction): EmbedBuilder {
+    return new EmbedBuilder()
+      .setColor('#ff03a7')
+      .setTimestamp()
+      .setFooter({
+        text: `Requested by ${interaction.user.tag}`,
+        iconURL:
+          interaction.user.avatarURL({size: 64}) ??
+          interaction.user.displayAvatarURL({size: 64}),
+      });
   }
 
   public async registerCommands(): Promise<void> {

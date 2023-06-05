@@ -5,6 +5,7 @@ import {
   chatInputApplicationCommandMention,
   codeBlock,
   EmbedBuilder,
+  escapeMarkdown,
   hyperlink,
   inlineCode,
   SlashCommandBuilder,
@@ -51,7 +52,7 @@ export default new Command({
         (
           await Promise.all(
             (server.playerData.online ?? []).map(uuid =>
-              PlayerUtils.getPlayer(uuid).then(player => player?.name)
+              PlayerUtils.getPlayerByUuid(uuid).then(player => player?.name)
             )
           )
         )
@@ -151,7 +152,7 @@ export default new Command({
     });
   },
   autocomplete: async (client, interaction) => {
-    const serverName = interaction.options.getString('server', true);
+    const serverArgument = interaction.options.getString('server', true);
 
     const servers = await minefort.servers.getOnlineServers();
     const choices: ApplicationCommandOptionChoiceData[] = servers.map(
@@ -160,7 +161,7 @@ export default new Command({
       }
     );
 
-    const filtered = client.sortAutocompleteChoices(choices, serverName);
+    const filtered = client.sortAutocompleteChoices(choices, serverArgument);
     await interaction.respond(filtered);
   },
 });

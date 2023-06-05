@@ -1,7 +1,7 @@
 export type Player = {
   id: string;
   name: string;
-  properties: [
+  properties?: [
     {
       name: string;
       value: string;
