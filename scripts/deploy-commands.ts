@@ -8,9 +8,9 @@ import {
 import {REST} from 'discord.js';
 import {env} from '../src/utils/env';
 
-const TOKEN = env.TOKEN as string;
-const CLIENTID = env.CLIENTID as string;
-const GUILDID = env.GUILDID as string;
+const TOKEN = env.TOKEN;
+const CLIENT_ID = env.CLIENT_ID;
+const GUILD_ID = env.GUILD_ID;
 
 (async () => {
   const commands: RESTPostAPIChatInputApplicationCommandsJSONBody[] = [];
@@ -29,7 +29,7 @@ const GUILDID = env.GUILDID as string;
   const rest = new REST({version: '10'}).setToken(TOKEN);
 
   await rest
-    .put(Routes.applicationGuildCommands(CLIENTID, GUILDID), {body: commands})
+    .put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), {body: commands})
     .then(() => console.log('Successfully registered application commands.'))
     .catch(console.error);
 })();
