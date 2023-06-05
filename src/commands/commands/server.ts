@@ -1,10 +1,16 @@
 import {Command} from '../Command';
 import {
   ApplicationCommandOptionChoiceData,
+  bold,
+  chatInputApplicationCommandMention,
+  codeBlock,
   EmbedBuilder,
+  inlineCode,
   SlashCommandBuilder,
+  underscore,
 } from 'discord.js';
 import {minefort} from '../../index';
+import {MinefortUtils} from '../../utils/MinefortUtils';
 
 export default new Command({
   enabled: true,
@@ -22,9 +28,8 @@ export default new Command({
     await interaction.deferReply({ephemeral: true});
 
     const serverId = interaction.options.getString('server', true);
-    const server = await minefort.servers.getOnlineServer(serverId, {
-      byName: false,
-    });
+    const servers = await minefort.servers.getOnlineServers({limit: 500});
+    const server = servers.find(server => server.id === serverId);
 
     if (!server) {
       await interaction.editReply({
@@ -33,12 +38,68 @@ export default new Command({
       return;
     }
 
-    const serverEmbed = new EmbedBuilder().setTimestamp().setFooter({
-      text: `Requested by ${interaction.user.tag}`,
-      iconURL:
-        interaction.user.avatarURL({size: 64}) ??
-        interaction.user.displayAvatarURL({size: 64}),
-    });
+    const serverEmbed = new EmbedBuilder()
+      .setColor('#2cd3e1')
+      .setAuthor({
+        name: server.name,
+        iconURL: server.icon.image,
+      })
+      .setDescription(
+        codeBlock('ansi', MinefortUtils.convertColorsToAnsi(server.motd))
+      )
+      .addFields([
+        {
+          name: 'Server ID',
+          value: `${inlineCode(server.id)}`,
+          inline: true,
+        },
+        {
+          name: 'Software',
+          value: `${MinefortUtils.getServerSoftware(server.version)}`,
+          inline: true,
+        },
+        {
+          name: 'Version',
+          value: `${MinefortUtils.getServerVersion(server.version)}`,
+          inline: true,
+        },
+        {
+          name: 'Owner',
+          value: `Owner ID: ${inlineCode(
+            MinefortUtils.getMinefortIdFromAuth0Id(server.ownerId)
+          )}\nTwo factor: ${
+            MinefortUtils.hasTwoFactorEnabled(server.ownerId) ? 'on' : 'off'
+          }\n\nUse ${chatInputApplicationCommandMention(
+            'servers',
+            'user',
+            ''
+          )} to see\nservers owned by this user`,
+          inline: true,
+        },
+        {
+          name: 'Current rank',
+          value: `${MinefortUtils.getServerRankWindow(servers, server)
+            .map(
+              value =>
+                `${inlineCode(
+                  `#${servers.findIndex(value1 => value.id === value1.id) + 1}`
+                )}: ${
+                  value.name === server.name
+                    ? bold(underscore(value.name))
+                    : value.name
+                }`
+            )
+            .join('\n')}`,
+          inline: true,
+        },
+      ])
+      .setTimestamp()
+      .setFooter({
+        text: `Requested by ${interaction.user.tag}`,
+        iconURL:
+          interaction.user.avatarURL({size: 64}) ??
+          interaction.user.displayAvatarURL({size: 64}),
+      });
 
     await interaction.editReply({
       embeds: [serverEmbed],
