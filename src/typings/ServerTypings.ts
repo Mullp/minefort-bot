@@ -1,4 +1,5 @@
 export interface ServerPlanSpecifics {
+  name: ServerPlan;
   price: number;
   online24h: boolean;
   pluginBrowser: boolean;
@@ -13,4 +14,4 @@ export interface ServerPlanSpecifics {
   storage: number;
 }
 
-export type ServerPlan = 'Free' | 'Cottage' | 'House' | 'Mansion' | 'Fort';
+export type ServerPlan = 'Hut' | 'Cottage' | 'House' | 'Mansion' | 'Fort';

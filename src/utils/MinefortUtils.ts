@@ -71,14 +71,14 @@ export class MinefortUtils {
   }
 
   /**
-   * Estimates the server plan from the max player count.
+   * Gets the estimated the server plan from the max player count.
    * @param maxPlayerCount - The max player count.
    * @returns The estimated server plan.
    */
-  public static estimateServerPlan(maxPlayerCount: number): ServerPlan | null {
+  public static getEstimatedPlan(maxPlayerCount: number): ServerPlan {
     switch (maxPlayerCount) {
       case 20:
-        return 'Free';
+        return 'Hut';
       case 35:
         return 'Cottage';
       case 50:
@@ -88,7 +88,7 @@ export class MinefortUtils {
       case 200:
         return 'Fort';
       default:
-        return null;
+        return 'Hut';
     }
   }
 
@@ -99,8 +99,9 @@ export class MinefortUtils {
    */
   public static getServerPlanSpecifics(plan: ServerPlan): ServerPlanSpecifics {
     switch (plan) {
-      case 'Free':
+      case 'Hut':
         return {
+          name: 'Hut',
           price: 0,
           online24h: false,
           pluginBrowser: true,
@@ -116,6 +117,7 @@ export class MinefortUtils {
         };
       case 'Cottage':
         return {
+          name: 'Cottage',
           price: 5.99,
           online24h: true,
           pluginBrowser: true,
@@ -131,6 +133,7 @@ export class MinefortUtils {
         };
       case 'House':
         return {
+          name: 'House',
           price: 11.49,
           online24h: true,
           pluginBrowser: true,
@@ -146,6 +149,7 @@ export class MinefortUtils {
         };
       case 'Mansion':
         return {
+          name: 'Mansion',
           price: 23.99,
           online24h: true,
           pluginBrowser: true,
@@ -161,6 +165,7 @@ export class MinefortUtils {
         };
       case 'Fort':
         return {
+          name: 'Fort',
           price: 47.99,
           online24h: true,
           pluginBrowser: true,
@@ -176,6 +181,7 @@ export class MinefortUtils {
         };
       default:
         return {
+          name: 'Hut',
           price: 0,
           online24h: false,
           pluginBrowser: true,

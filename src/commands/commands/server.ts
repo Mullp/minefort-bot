@@ -5,6 +5,7 @@ import {
   chatInputApplicationCommandMention,
   codeBlock,
   EmbedBuilder,
+  hyperlink,
   inlineCode,
   SlashCommandBuilder,
   underscore,
@@ -38,6 +39,10 @@ export default new Command({
       return;
     }
 
+    const estimatedServerPlan = MinefortUtils.getServerPlanSpecifics(
+      MinefortUtils.getEstimatedPlan(server.playerData.maxPlayers)
+    );
+
     const serverEmbed = new EmbedBuilder()
       .setColor('#2cd3e1')
       .setAuthor({
@@ -45,7 +50,8 @@ export default new Command({
         iconURL: server.icon.image,
       })
       .setDescription(
-        codeBlock('ansi', MinefortUtils.convertColorsToAnsi(server.motd))
+        `${server.name}.minefort.com\n` +
+          codeBlock('ansi', MinefortUtils.convertColorsToAnsi(server.motd))
       )
       .addFields([
         {
@@ -74,6 +80,23 @@ export default new Command({
             'user',
             ''
           )} to see\nservers owned by this user`,
+          inline: true,
+        },
+        {
+          name: 'Estimated plan',
+          value: `Plan: ${underscore(
+            estimatedServerPlan.name
+          )}\nPrice: ${underscore(
+            `$${estimatedServerPlan.price}⸍ᵐᵒ`
+          )}\nRAM: ${underscore(
+            `${estimatedServerPlan.ram * 1024} MB`
+          )}\nStorage: ${underscore(
+            `${estimatedServerPlan.storage} GB`
+          )}\nMax players: ${underscore(
+            estimatedServerPlan.maxPlayerCount.toString()
+          )}\nBackup slots: ${underscore(
+            estimatedServerPlan.backupSlots.toString()
+          )}`,
           inline: true,
         },
         {
