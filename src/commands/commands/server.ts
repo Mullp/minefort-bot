@@ -12,6 +12,7 @@ import {
 } from 'discord.js';
 import {minefort} from '../../index';
 import {MinefortUtils} from '../../utils/MinefortUtils';
+import {PlayerUtils} from '../../utils/PlayerUtils';
 
 export default new Command({
   enabled: true,
@@ -26,7 +27,7 @@ export default new Command({
         .setAutocomplete(true)
     ),
   execute: async (client, interaction) => {
-    await interaction.deferReply({ephemeral: true});
+    await interaction.deferReply({ephemeral: false});
 
     const serverId = interaction.options.getString('server', true);
     const servers = await minefort.servers.getOnlineServers({limit: 500});
@@ -43,14 +44,34 @@ export default new Command({
       MinefortUtils.getEstimatedPlan(server.playerData.maxPlayers)
     );
 
+    const playersFormatted = new Intl.ListFormat('en-us', {
+      style: 'long',
+    }).format(
+      (
+        await Promise.all(
+          (server.playerData.online ?? []).map(uuid =>
+            PlayerUtils.getPlayer(uuid).then(player => player?.name)
+          )
+        )
+      )
+        .filter((name): name is string => !!name)
+        .map(name =>
+          hyperlink(
+            name,
+            `https://namemc.com/${name}`,
+            `Click to view ${name} on NameMC`
+          )
+        )
+    );
+
     const serverEmbed = new EmbedBuilder()
-      .setColor('#2cd3e1')
+      .setColor('#00ffca')
       .setAuthor({
         name: server.name,
         iconURL: server.icon.image,
       })
       .setDescription(
-        `${server.name}.minefort.com\n` +
+        `${underscore(`${server.name}.minefort.com`)}\n` +
           codeBlock('ansi', MinefortUtils.convertColorsToAnsi(server.motd))
       )
       .addFields([
@@ -79,7 +100,7 @@ export default new Command({
             'servers',
             'user',
             ''
-          )} to see\nservers owned by this user`,
+          )} to see servers owned by this user`,
           inline: true,
         },
         {
@@ -114,6 +135,11 @@ export default new Command({
             )
             .join('\n')}`,
           inline: true,
+        },
+        {
+          name: `Players: ${server.playerData.playerCount}/${server.playerData.maxPlayers} (Only Java players)`,
+          value: playersFormatted,
+          inline: false,
         },
       ])
       .setTimestamp()
