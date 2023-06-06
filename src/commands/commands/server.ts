@@ -14,6 +14,7 @@ import {
 import {minefort} from '../../index';
 import {MinefortUtils} from '../../utils/MinefortUtils';
 import {PlayerUtils} from '../../utils/PlayerUtils';
+import {HistoryManager} from '../../history/HistoryManager';
 
 export default new Command({
   enabled: true,
@@ -32,6 +33,7 @@ export default new Command({
 
     const serverId = interaction.options.getString('server', true);
     const servers = await minefort.servers.getOnlineServers({limit: 500});
+    HistoryManager.createHistory(servers);
     const server = servers.find(server => server.id === serverId);
 
     if (!server) {
@@ -155,6 +157,7 @@ export default new Command({
     const serverArgument = interaction.options.getString('server', true);
 
     const servers = await minefort.servers.getOnlineServers();
+    HistoryManager.createHistory(servers);
     const choices: ApplicationCommandOptionChoiceData[] = servers.map(
       server => {
         return {name: server.name, value: server.id};

@@ -9,6 +9,7 @@ import {
 } from 'discord.js';
 import {minefort} from '../../index';
 import {PlayerUtils} from '../../utils/PlayerUtils';
+import {HistoryManager} from '../../history/HistoryManager';
 
 export default new Command({
   enabled: true,
@@ -37,6 +38,7 @@ export default new Command({
     }
 
     const servers = await minefort.servers.getOnlineServers({limit: 500});
+    HistoryManager.createHistory(servers);
 
     const server = servers.find(server => {
       if (!server.playerData.online) return false;

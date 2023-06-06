@@ -3,6 +3,7 @@ import {GatewayIntentBits} from 'discord-api-types/v10';
 import {env} from './utils/env';
 import {MinefortClient} from './client/minefort/MinefortClient';
 import {connectToMongo} from './database/mongo';
+import {cronPing} from './history/cron-ping';
 
 export const client = new DiscordClient({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],
@@ -17,4 +18,6 @@ export const minefort = new MinefortClient();
   // await client.registerModals();
 
   await client.login(env.TOKEN);
+
+  cronPing.start();
 })();
