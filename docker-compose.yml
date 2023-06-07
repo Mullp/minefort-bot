@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  bot:
+    build: .
+    image: minefort-bot
+    environment:
+      TOKEN:
+      CLIENT_ID:
+      GUILD_ID:
+      DATABASE_URL:
