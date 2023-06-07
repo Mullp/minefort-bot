@@ -77,10 +77,13 @@ export default new Command({
     const history = databaseHistory
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
       .filter(
-        (history, index) =>
+        (value, index) =>
           index === 0 ||
-          history.server.serverName !==
-            databaseHistory[index - 1].server.serverName
+          value.server.serverName !==
+            databaseHistory[index - 1].server.serverName ||
+          value.createdAt.getTime() -
+            databaseHistory[index - 1].createdAt.getTime() >
+            1000 * 60 * 6
       )
       .filter(history => history.server.serverName === server.name)
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());

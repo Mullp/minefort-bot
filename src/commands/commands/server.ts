@@ -9,12 +9,15 @@ import {
   hyperlink,
   inlineCode,
   SlashCommandBuilder,
+  time,
   underscore,
 } from 'discord.js';
 import {minefort} from '../../index';
 import {MinefortUtils} from '../../utils/MinefortUtils';
 import {PlayerUtils} from '../../utils/PlayerUtils';
 import {HistoryManager} from '../../history/HistoryManager';
+import {Server, ServerModel} from '../../database/models/ServerModel';
+import {ServerHistory} from '../../database/models/ServerHistoryModel';
 
 export default new Command({
   enabled: true,
@@ -31,17 +34,39 @@ export default new Command({
   execute: async (client, interaction) => {
     await interaction.deferReply({ephemeral: false});
 
-    const serverId = interaction.options.getString('server', true);
+    const serverId = interaction.options
+      .getString('server', true)
+      .toLowerCase();
     const servers = await minefort.servers.getOnlineServers({limit: 500});
     HistoryManager.createHistory(servers);
-    const server = servers.find(server => server.id === serverId);
+    const server = servers.find(
+      server =>
+        server.id.toLowerCase() === serverId ||
+        server.name.toLowerCase() === serverId
+    );
+    const databaseServer = await ServerModel.findOne({
+      serverId: server?.id ?? serverId,
+    }).populate('serverHistory');
 
-    if (!server) {
+    if (!(server && databaseServer)) {
       await interaction.editReply({
         content: 'Server not found',
       });
       return;
     }
+
+    const serverHistory = databaseServer.serverHistory as ServerHistory[];
+    const sortedServerHistory = serverHistory
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+      .filter(
+        (history, index) =>
+          index === 0 ||
+          history.createdAt.getTime() -
+            serverHistory[index - 1].createdAt.getTime() >
+            1000 * 60 * 6
+      )
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    console.log(sortedServerHistory);
 
     const estimatedServerPlan = MinefortUtils.getServerPlanSpecifics(
       MinefortUtils.getEstimatedPlan(server.playerData.maxPlayers)
@@ -87,6 +112,21 @@ export default new Command({
         {
           name: 'Version',
           value: `${MinefortUtils.getServerVersion(server.version)}`,
+          inline: true,
+        },
+        {
+          name: 'Estimated startup',
+          value: time(sortedServerHistory[0].createdAt, 'R') || 'Unknown',
+          inline: true,
+        },
+        {
+          name: '\u200b',
+          value: '\u200b',
+          inline: true,
+        },
+        {
+          name: '\u200b',
+          value: '\u200b',
           inline: true,
         },
         {
@@ -137,7 +177,7 @@ export default new Command({
         },
         {
           name: `Players: ${server.playerData.playerCount}/${server.playerData.maxPlayers} (Only Java players)`,
-          value: playersFormatted,
+          value: playersFormatted || 'No players online',
           inline: false,
         },
       ])

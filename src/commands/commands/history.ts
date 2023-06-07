@@ -23,11 +23,21 @@ export default new Command({
         .setDescription('The player you want to get the history of')
         .setRequired(true)
         .setAutocomplete(true)
+    )
+    .addIntegerOption(option =>
+      option
+        .setName('amount')
+        .setDescription('The amount of history entries you want to get')
+        .setMinValue(1)
+        .setMaxValue(50)
+        .setRequired(false)
     ),
   execute: async (client, interaction) => {
     await interaction.deferReply({ephemeral: false});
 
     const playerArgument = interaction.options.getString('player', true);
+    const amountArgument =
+      interaction.options.getInteger('amount', false) || 10;
 
     const player = await PlayerUtils.getPlayerByName(playerArgument);
     if (!player) {
@@ -55,21 +65,39 @@ export default new Command({
     const history = databaseHistory
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .filter(
-        (history, index) =>
+        (value, index) =>
           index === 0 ||
-          history.server.serverName !==
-            databaseHistory[index - 1].server.serverName
+          value.server.serverName !==
+            databaseHistory[index - 1].server.serverName ||
+          databaseHistory[index - 1].createdAt.getTime() -
+            value.createdAt.getTime() >
+            1000 * 60 * 6
       )
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     const sortedHistory = databaseHistory
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
       .filter(
-        (history, index) =>
+        (value, index) =>
           index === 0 ||
-          history.server.serverName !==
-            databaseHistory[index - 1].server.serverName
+          value.server.serverName !==
+            databaseHistory[index - 1].server.serverName ||
+          value.createdAt.getTime() -
+            databaseHistory[index - 1].createdAt.getTime() >
+            1000 * 60 * 6
       )
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+    // console.log(
+    //   databaseHistory
+    //     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    //     .filter(
+    //       (value, index) =>
+    //         index === 0 ||
+    //         value.createdAt.getTime() -
+    //           databaseHistory[index - 1].createdAt.getTime() >
+    //           1000 * 60 * 6
+    //     )
+    // );
 
     const servers = await minefort.servers.getOnlineServers({limit: 500});
     HistoryManager.createHistory(servers);
@@ -94,12 +122,16 @@ export default new Command({
       .setFields([
         {
           name: 'Server',
-          value: sortedHistory.map(value => value.server.serverName).join('\n'),
+          value: sortedHistory
+            .slice(0, amountArgument)
+            .map(value => value.server.serverName)
+            .join('\n'),
           inline: true,
         },
         {
           name: 'Joined',
           value: sortedHistory
+            .slice(0, amountArgument)
             .map(value => time(value.createdAt, 'R'))
             .join('\n'),
           inline: true,
@@ -107,6 +139,7 @@ export default new Command({
         {
           name: 'Left',
           value: history
+            .slice(0, amountArgument)
             .map((value, index) =>
               !(currentlyPlaying && index === 0)
                 ? time(value.createdAt, 'R')
