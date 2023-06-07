@@ -4,8 +4,9 @@ import {
   ClientEvents,
   ClientOptions,
   Collection,
-  EmbedBuilder, Interaction
-} from "discord.js";
+  EmbedBuilder,
+  Interaction,
+} from 'discord.js';
 import {IDiscordClient} from './IDiscordClient';
 import {Command} from '../../commands/Command';
 import {Modal} from '../../modals/Modal';
@@ -30,7 +31,11 @@ export class DiscordClient extends Client implements IDiscordClient {
       .setColor('#ff03a7')
       .setTimestamp()
       .setFooter({
-        text: `Requested by ${interaction.user.tag}`,
+        text: `Requested by ${
+          interaction.user.discriminator === '0'
+            ? `@${interaction.user.username}`
+            : interaction.user.tag
+        }`,
         iconURL:
           interaction.user.avatarURL({size: 64}) ??
           interaction.user.displayAvatarURL({size: 64}),
