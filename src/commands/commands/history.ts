@@ -1,9 +1,11 @@
 import {Command} from '../Command';
 import {
   ApplicationCommandOptionChoiceData,
+  bold,
   hyperlink,
   SlashCommandBuilder,
   time,
+  underscore,
 } from 'discord.js';
 import {PlayerModel} from '../../database/models/PlayerModel';
 import {PlayerUtils} from '../../utils/PlayerUtils';
@@ -105,6 +107,23 @@ export default new Command({
       server =>
         server.playerData.online && server.playerData.online.includes(player.id)
     );
+    const timePlayed = history.map((value, index) => {
+      const unixTime =
+        (value.createdAt.getTime() - sortedHistory[index].createdAt.getTime()) /
+        1000;
+
+      const seconds = unixTime;
+      const minutes = Math.floor(seconds / 60);
+      const hours = Math.floor(minutes / 60);
+      const days = Math.floor(hours / 24);
+
+      return {
+        seconds: seconds,
+        minutes: minutes,
+        hours: hours,
+        days: days,
+      };
+    });
 
     const historyEmbed = client
       .getBaseEmbed(interaction)
@@ -117,14 +136,20 @@ export default new Command({
           player.name,
           `https://namemc.com/profile/${player.name}`,
           'Click to view on NameMC'
-        )}`
+        )}\nIf the a server is ${bold(
+          underscore('marked')
+        )} it means that the player is currently playing on that server.`
       )
       .setFields([
         {
           name: 'Server',
           value: sortedHistory
             .slice(0, amountArgument)
-            .map(value => value.server.serverName)
+            .map((value, index) =>
+              !(currentlyPlaying && index === 0)
+                ? value.server.serverName
+                : `${bold(underscore(value.server.serverName))}`
+            )
             .join('\n'),
           inline: true,
         },
@@ -136,14 +161,46 @@ export default new Command({
             .join('\n'),
           inline: true,
         },
+        // {
+        //   name: 'Left',
+        //   value: history
+        //     .slice(0, amountArgument)
+        //     .map((value, index) =>
+        //       !(currentlyPlaying && index === 0)
+        //         ? time(value.createdAt, 'R')
+        //         : 'Currently playing'
+        //     )
+        //     .join('\n'),
+        //   inline: true,
+        // },
         {
-          name: 'Left',
-          value: history
+          name: 'Time played',
+          value: timePlayed
             .slice(0, amountArgument)
-            .map((value, index) =>
-              !(currentlyPlaying && index === 0)
-                ? time(value.createdAt, 'R')
-                : 'Currently playing'
+            .map(
+              (value, index) =>
+                new Intl.ListFormat('en-us').format(
+                  [
+                    value.days > 0
+                      ? `${value.days} day${value.days !== 1 ? 's' : ''}`
+                      : '',
+                    Math.round(value.hours % 24) > 0
+                      ? `${Math.round(value.hours % 24)} hour${
+                          value.hours % 24 !== 1 ? 's' : ''
+                        }`
+                      : '',
+                    Math.round(value.minutes % 60) > 0
+                      ? `${Math.round(value.minutes % 60)} minute${
+                          value.minutes % 60 !== 1 ? 's' : ''
+                        }`
+                      : '',
+                    Math.round(value.seconds % 60) > 0
+                      ? `${Math.round(value.seconds % 60)} second${
+                          value.seconds % 60 !== 1 ? 's' : ''
+                        }`
+                      : '',
+                  ].filter(value => value !== '')
+                ) || 'under 5 minutes'
             )
             .join('\n'),
           inline: true,
