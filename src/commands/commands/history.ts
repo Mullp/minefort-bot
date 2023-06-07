@@ -8,9 +8,9 @@ import {
 import {PlayerModel} from '../../database/models/PlayerModel';
 import {PlayerUtils} from '../../utils/PlayerUtils';
 import {ServerHistory} from '../../database/models/ServerHistoryModel';
-import {DocumentType} from '@typegoose/typegoose';
-import {BeAnObject} from '@typegoose/typegoose/lib/types';
 import {Server} from '../../database/models/ServerModel';
+import {minefort} from '../../index';
+import {HistoryManager} from '../../history/HistoryManager';
 
 export default new Command({
   enabled: true,
@@ -37,8 +37,6 @@ export default new Command({
       return;
     }
 
-    console.log(player);
-
     const databasePlayer = await PlayerModel.findOne({
       uuid: player.id,
     })
@@ -55,6 +53,15 @@ export default new Command({
       server: Server;
     })[];
     const history = databaseHistory
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .filter(
+        (history, index) =>
+          index === 0 ||
+          history.server.serverName !==
+            databaseHistory[index - 1].server.serverName
+      )
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    const sortedHistory = databaseHistory
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
       .filter(
         (history, index) =>
@@ -64,7 +71,12 @@ export default new Command({
       )
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
-    console.log(history);
+    const servers = await minefort.servers.getOnlineServers({limit: 500});
+    HistoryManager.createHistory(servers);
+    const currentlyPlaying = !!servers.find(
+      server =>
+        server.playerData.online && server.playerData.online.includes(player.id)
+    );
 
     const historyEmbed = client
       .getBaseEmbed(interaction)
@@ -82,13 +94,24 @@ export default new Command({
       .setFields([
         {
           name: 'Server',
-          value: history.map(history => history.server.serverName).join('\n'),
+          value: sortedHistory.map(value => value.server.serverName).join('\n'),
           inline: true,
         },
         {
           name: 'Joined',
+          value: sortedHistory
+            .map(value => time(value.createdAt, 'R'))
+            .join('\n'),
+          inline: true,
+        },
+        {
+          name: 'Left',
           value: history
-            .map(history => time(history.createdAt, 'R'))
+            .map((value, index) =>
+              !(currentlyPlaying && index === 0)
+                ? time(value.createdAt, 'R')
+                : 'Currently playing'
+            )
             .join('\n'),
           inline: true,
         },
