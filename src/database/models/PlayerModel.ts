@@ -1,6 +1,13 @@
-import {getModelForClass, modelOptions, prop} from '@typegoose/typegoose';
+import {getModelForClass, modelOptions, prop, Ref} from '@typegoose/typegoose';
+import {ServerHistory} from './ServerHistoryModel';
 
-@modelOptions({schemaOptions: {timestamps: true}})
+@modelOptions({
+  schemaOptions: {
+    timestamps: true,
+    toJSON: {virtuals: true},
+    toObject: {virtuals: true},
+  },
+})
 export class Player {
   @prop({
     required: true,
@@ -13,6 +20,13 @@ export class Player {
 
   @prop()
   public name?: string;
+
+  @prop({
+    ref: 'ServerHistory',
+    foreignField: 'players',
+    localField: '_id',
+  })
+  public history!: Ref<ServerHistory>[];
 
   public createdAt!: Date;
   public updatedAt!: Date;

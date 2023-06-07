@@ -6,7 +6,7 @@ export class DiscordUser {
   @prop({required: true, unique: true})
   public discordId!: string;
 
-  @prop({ref: () => MinefortUser, required: true})
+  @prop({required: true, ref: () => MinefortUser})
   public minefortUser!: Ref<MinefortUser>;
 
   public createdAt!: Date;

@@ -1,9 +1,20 @@
 import {getModelForClass, modelOptions, prop, Ref} from '@typegoose/typegoose';
 import {Player} from './PlayerModel';
+import {Server} from './ServerModel';
+import {Types} from 'mongoose';
 
-@modelOptions({schemaOptions: {timestamps: true}})
+@modelOptions({
+  schemaOptions: {
+    timestamps: true,
+    toJSON: {virtuals: true},
+    toObject: {virtuals: true},
+  },
+})
 export class ServerHistory {
-  @prop({ref: () => Player, required: true})
+  @prop({required: true, ref: 'Server'})
+  public server!: Ref<Server>;
+
+  @prop({required: true, ref: () => Player})
   public players!: Ref<Player>[];
 
   public createdAt!: Date;

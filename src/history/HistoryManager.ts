@@ -32,18 +32,11 @@ export class HistoryManager {
         })
       );
 
-      const serverHistoryDocument = await ServerHistoryModel.create({
-        players: minefortPlayerDocuments.map(player => player.id),
-      });
-
       const serverDocument = await ServerModel.findOneAndUpdate(
         {serverId: server.id},
         {
           $set: {
             serverName: server.name,
-          },
-          $push: {
-            serverHistory: serverHistoryDocument.id,
           },
         },
         {
@@ -51,6 +44,11 @@ export class HistoryManager {
           upsert: true,
         }
       );
+
+      const serverHistoryDocument = await ServerHistoryModel.create({
+        server: serverDocument.id,
+        players: minefortPlayerDocuments.map(player => player.id),
+      });
 
       await MinefortUserModel.findOneAndUpdate(
         {minefortId: MinefortUtils.getMinefortIdFromAuth0Id(server.ownerId)},

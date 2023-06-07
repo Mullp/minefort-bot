@@ -15,7 +15,7 @@ export class MinefortUser {
   @prop()
   public twoFactor?: boolean;
 
-  @prop({ref: () => Server})
+  @prop({required: true, ref: () => Server})
   public servers!: Ref<Server>[];
 
   public createdAt!: Date;

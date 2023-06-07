@@ -1,7 +1,13 @@
 import {getModelForClass, modelOptions, prop, Ref} from '@typegoose/typegoose';
 import {ServerHistory} from './ServerHistoryModel';
 
-@modelOptions({schemaOptions: {timestamps: true}})
+@modelOptions({
+  schemaOptions: {
+    timestamps: true,
+    toJSON: {virtuals: true},
+    toObject: {virtuals: true},
+  },
+})
 export class Server {
   @prop({required: true, unique: true})
   public serverId!: string;
@@ -9,7 +15,11 @@ export class Server {
   @prop({required: true})
   public serverName!: string;
 
-  @prop({ref: () => ServerHistory})
+  @prop({
+    ref: () => ServerHistory,
+    foreignField: 'server',
+    localField: '_id',
+  })
   public serverHistory!: Ref<ServerHistory>[];
 
   public createdAt!: Date;
