@@ -4,6 +4,7 @@ services:
   bot:
     build: .
     image: minefort-bot
+    restart: always
     environment:
       TOKEN:
       CLIENT_ID:

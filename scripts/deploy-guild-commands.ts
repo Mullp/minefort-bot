@@ -10,6 +10,7 @@ import {env} from '../src/utils/env';
 
 const TOKEN = env.TOKEN;
 const CLIENT_ID = env.CLIENT_ID;
+const GUILD_ID = env.GUILD_ID;
 
 (async () => {
   const commands: RESTPostAPIChatInputApplicationCommandsJSONBody[] = [];
@@ -28,7 +29,7 @@ const CLIENT_ID = env.CLIENT_ID;
   const rest = new REST({version: '10'}).setToken(TOKEN);
 
   await rest
-    .put(Routes.applicationCommands(CLIENT_ID), {body: commands})
+    .put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), {body: commands})
     .then(() => console.log('Successfully registered application commands.'))
     .catch(console.error);
 })();

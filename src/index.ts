@@ -6,7 +6,7 @@ import {connectToMongo} from './database/mongo';
 import {cronPing} from './history/cron-ping';
 
 export const client = new DiscordClient({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],
+  intents: [GatewayIntentBits.Guilds],
 });
 export const minefort = new MinefortClient();
 

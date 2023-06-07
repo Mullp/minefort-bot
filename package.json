@@ -17,7 +17,8 @@
     "fix": "gts fix",
     "start": "node build/src/index.js",
     "start:dev": "yarn run clean && yarn run compile && yarn run start",
-    "deploy-cmds": "ts-node ./scripts/deploy-commands.ts"
+    "deploy-guild-cmds": "ts-node scripts/deploy-guild-commands.ts",
+    "deploy-cmds": "ts-node scripts/deploy-commands.ts"
   },
   "devDependencies": {
     "@types/node": "^18.0.0",
