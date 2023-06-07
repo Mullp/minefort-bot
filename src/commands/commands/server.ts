@@ -134,11 +134,12 @@ export default new Command({
             MinefortUtils.getMinefortIdFromAuth0Id(server.ownerId)
           )}\nTwo factor: ${
             MinefortUtils.hasTwoFactorEnabled(server.ownerId) ? 'on' : 'off'
-          }\n\nUse ${chatInputApplicationCommandMention(
-            'servers',
-            'user',
-            ''
-          )} to see servers owned by this user`,
+          }`,
+          // \n\nUse ${chatInputApplicationCommandMention(
+          //   'servers',
+          //   'user',
+          //   ''
+          // )} to see servers owned by this user
           inline: true,
         },
         {

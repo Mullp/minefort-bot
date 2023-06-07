@@ -100,7 +100,7 @@ export default new Command({
           : ''
       }\n\n${chatInputApplicationCommandMention(
         'server',
-        ''
+        '1116117866446602355'
       )} to get more information about the server`
     );
 
