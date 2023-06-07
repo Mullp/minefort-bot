@@ -20,7 +20,6 @@ export class PlayerUtils {
 
       // 20 days
       if (1000 * 60 * 60 * 24 * 20 > diffInMs) {
-        console.log('Returning old cached player');
         return player.player;
       }
     }
@@ -32,8 +31,6 @@ export class PlayerUtils {
       .then(res => {
         res.id = PlayerUtils.convertPlayerIdToUuid(res.id);
         this.playerCache.set(uuid, {player: res, createdAt: new Date()});
-
-        console.log('retuning new player');
 
         return res;
       })
@@ -53,7 +50,6 @@ export class PlayerUtils {
 
         // 20 days
         if (1000 * 60 * 60 * 24 * 20 > diffInMs) {
-          console.log('Returning old cached player');
           return player.player;
         }
       }

@@ -66,7 +66,6 @@ export default new Command({
             1000 * 60 * 6
       )
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-    console.log(sortedServerHistory);
 
     const estimatedServerPlan = MinefortUtils.getServerPlanSpecifics(
       MinefortUtils.getEstimatedPlan(server.playerData.maxPlayers)

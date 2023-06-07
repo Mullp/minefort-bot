@@ -89,18 +89,6 @@ export default new Command({
       )
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
-    // console.log(
-    //   databaseHistory
-    //     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-    //     .filter(
-    //       (value, index) =>
-    //         index === 0 ||
-    //         value.createdAt.getTime() -
-    //           databaseHistory[index - 1].createdAt.getTime() >
-    //           1000 * 60 * 6
-    //     )
-    // );
-
     const servers = await minefort.servers.getOnlineServers({limit: 500});
     HistoryManager.createHistory(servers);
     const currentlyPlaying = !!servers.find(
@@ -161,18 +149,6 @@ export default new Command({
             .join('\n'),
           inline: true,
         },
-        // {
-        //   name: 'Left',
-        //   value: history
-        //     .slice(0, amountArgument)
-        //     .map((value, index) =>
-        //       !(currentlyPlaying && index === 0)
-        //         ? time(value.createdAt, 'R')
-        //         : 'Currently playing'
-        //     )
-        //     .join('\n'),
-        //   inline: true,
-        // },
         {
           name: 'Time played',
           value: timePlayed
