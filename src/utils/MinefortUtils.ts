@@ -1,5 +1,7 @@
 import {ServerPlan, ServerPlanSpecifics} from '../typings/ServerTypings';
-import {Server} from 'minefort';
+import {Server} from '../database/models/ServerModel';
+import {ServerHistory} from '../database/models/ServerHistoryModel';
+import {Server as MinefortServer} from 'minefort';
 
 export class MinefortUtils {
   /**
@@ -211,9 +213,59 @@ export class MinefortUtils {
    * getRankWindow(array, 1); // [1, 2, 3, 4, 5]
    * getRankWindow(array, 9); // [5, 6, 7, 8, 9]
    */
-  public static getServerRankWindow(array: Server[], input: Server): Server[] {
+  public static getServerRankWindow(
+    array: MinefortServer[],
+    input: MinefortServer
+  ): MinefortServer[] {
     const index = array.indexOf(input);
     const window = array.slice(index - 2, index + 3);
     return window.length === 5 ? window : array.slice(0, 5);
+  }
+
+  public static getTimePlayedPerServer(
+    databaseHistory: (ServerHistory & {
+      server: Server;
+    })[]
+  ) {
+    const joinedOnHistory = databaseHistory
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+      .filter(
+        (value, index) =>
+          index === 0 ||
+          value.server.serverName !==
+            databaseHistory[index - 1].server.serverName ||
+          value.createdAt.getTime() -
+            databaseHistory[index - 1].createdAt.getTime() >
+            1000 * 60 * 6
+      )
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    const leftOnHistory = databaseHistory
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .filter(
+        (value, index) =>
+          index === 0 ||
+          value.server.serverName !==
+            databaseHistory[index - 1].server.serverName ||
+          databaseHistory[index - 1].createdAt.getTime() -
+            value.createdAt.getTime() >
+            1000 * 60 * 6
+      )
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+    const timePlayedPerHistory = leftOnHistory.map((value, index) => {
+      const timePlayed =
+        value.createdAt.getTime() - joinedOnHistory[index].createdAt.getTime();
+      return {serverName: value.server.serverName, timePlayed: timePlayed};
+    });
+
+    const timePlayedPerServer = new Map<string, number>();
+    timePlayedPerHistory.forEach(value => {
+      timePlayedPerServer.set(
+        value.serverName,
+        (timePlayedPerServer.get(value.serverName) || 0) + value.timePlayed
+      );
+    });
+
+    return timePlayedPerServer;
   }
 }

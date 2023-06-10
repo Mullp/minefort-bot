@@ -2,10 +2,8 @@ import {Command} from '../Command';
 import {
   ApplicationCommandOptionChoiceData,
   bold,
-  chatInputApplicationCommandMention,
   codeBlock,
   EmbedBuilder,
-  escapeMarkdown,
   hyperlink,
   inlineCode,
   SlashCommandBuilder,
@@ -16,7 +14,7 @@ import {minefort} from '../../index';
 import {MinefortUtils} from '../../utils/MinefortUtils';
 import {PlayerUtils} from '../../utils/PlayerUtils';
 import {HistoryManager} from '../../history/HistoryManager';
-import {Server, ServerModel} from '../../database/models/ServerModel';
+import {ServerModel} from '../../database/models/ServerModel';
 import {ServerHistory} from '../../database/models/ServerHistoryModel';
 
 export default new Command({

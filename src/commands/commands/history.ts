@@ -13,6 +13,7 @@ import {ServerHistory} from '../../database/models/ServerHistoryModel';
 import {Server} from '../../database/models/ServerModel';
 import {minefort} from '../../index';
 import {HistoryManager} from '../../history/HistoryManager';
+import {StringUtils} from '../../utils/StringUtils';
 
 export default new Command({
   enabled: true,
@@ -33,6 +34,16 @@ export default new Command({
         .setMinValue(1)
         .setMaxValue(50)
         .setRequired(false)
+    )
+    .addStringOption(option =>
+      option
+        .setName('sort')
+        .setDescription('The way you want to sort the history')
+        .addChoices(
+          {name: 'Date joined', value: 'date'},
+          {name: 'Time played', value: 'time'}
+        )
+        .setRequired(false)
     ),
   execute: async (client, interaction) => {
     await interaction.deferReply({ephemeral: false});
@@ -40,6 +51,7 @@ export default new Command({
     const playerArgument = interaction.options.getString('player', true);
     const amountArgument =
       interaction.options.getInteger('amount', false) || 10;
+    const sortArgument = interaction.options.getString('sort', false) || 'date';
 
     const player = await PlayerUtils.getPlayerByName(playerArgument);
     if (!player) {
@@ -64,19 +76,7 @@ export default new Command({
     const databaseHistory = databasePlayer.history as (ServerHistory & {
       server: Server;
     })[];
-    const history = databaseHistory
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-      .filter(
-        (value, index) =>
-          index === 0 ||
-          value.server.serverName !==
-            databaseHistory[index - 1].server.serverName ||
-          databaseHistory[index - 1].createdAt.getTime() -
-            value.createdAt.getTime() >
-            1000 * 60 * 6
-      )
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-    const sortedHistory = databaseHistory
+    const joinedOnHistory = databaseHistory
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
       .filter(
         (value, index) =>
@@ -88,30 +88,49 @@ export default new Command({
             1000 * 60 * 6
       )
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    const leftOnHistory = databaseHistory
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .filter(
+        (value, index) =>
+          index === 0 ||
+          value.server.serverName !==
+            databaseHistory[index - 1].server.serverName ||
+          databaseHistory[index - 1].createdAt.getTime() -
+            value.createdAt.getTime() >
+            1000 * 60 * 6
+      )
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
     const servers = await minefort.servers.getOnlineServers({limit: 500});
     HistoryManager.createHistory(servers);
-    const currentlyPlaying = !!servers.find(
+    const currentlyPlaying = servers.find(
       server =>
         server.playerData.online && server.playerData.online.includes(player.id)
     );
-    const timesPlayed = history.map((value, index) => {
-      const unixTime =
-        (value.createdAt.getTime() - sortedHistory[index].createdAt.getTime()) /
-        1000;
+    const timePlayed = leftOnHistory.map(
+      (value, index) =>
+        value.createdAt.getTime() - joinedOnHistory[index].createdAt.getTime()
+    );
 
-      const seconds = unixTime;
-      const minutes = Math.floor(seconds / 60);
-      const hours = Math.floor(minutes / 60);
-      const days = Math.floor(hours / 24);
+    const historyMerged = joinedOnHistory
+      .map((value, index) => {
+        return {
+          serverName: value.server.serverName,
+          joinedAt: value,
+          timePlayed: timePlayed[index],
+        };
+      })
+      .sort((a, b) => {
+        if (sortArgument === 'date') {
+          return (
+            b.joinedAt.createdAt.getTime() - a.joinedAt.createdAt.getTime()
+          );
+        } else if (sortArgument === 'time') {
+          return b.timePlayed - a.timePlayed;
+        }
 
-      return {
-        seconds: seconds,
-        minutes: minutes,
-        hours: hours,
-        days: days,
-      };
-    });
+        return 0;
+      });
 
     const historyEmbed = client
       .getBaseEmbed(interaction)
@@ -131,52 +150,32 @@ export default new Command({
       .setFields([
         {
           name: 'Server',
-          value: sortedHistory
+          value: historyMerged
             .slice(0, amountArgument)
             .map((value, index) =>
-              !(currentlyPlaying && index === 0)
-                ? value.server.serverName
-                : `${bold(underscore(value.server.serverName))}`
+              !(!!currentlyPlaying && index === 0)
+                ? value.serverName
+                : `${bold(underscore(value.serverName))}`
             )
             .join('\n'),
           inline: true,
         },
         {
           name: 'Joined',
-          value: sortedHistory
+          value: historyMerged
             .slice(0, amountArgument)
-            .map(value => time(value.createdAt, 'R'))
+            .map(value => time(value.joinedAt.createdAt, 'R'))
             .join('\n'),
           inline: true,
         },
         {
           name: 'Time played',
-          value: timesPlayed
+          value: historyMerged
             .slice(0, amountArgument)
             .map(
-              (value, index) =>
-                new Intl.ListFormat('en-us').format(
-                  [
-                    value.days > 0
-                      ? `${value.days} day${value.days !== 1 ? 's' : ''}`
-                      : '',
-                    Math.round(value.hours % 24) > 0
-                      ? `${Math.round(value.hours % 24)} hour${
-                          value.hours % 24 !== 1 ? 's' : ''
-                        }`
-                      : '',
-                    Math.round(value.minutes % 60) > 0
-                      ? `${Math.round(value.minutes % 60)} minute${
-                          value.minutes % 60 !== 1 ? 's' : ''
-                        }`
-                      : '',
-                    Math.round(value.seconds % 60) > 0
-                      ? `${Math.round(value.seconds % 60)} second${
-                          value.seconds % 60 !== 1 ? 's' : ''
-                        }`
-                      : '',
-                  ].filter(value => value !== '')
-                ) || 'under 5 minutes'
+              value =>
+                StringUtils.formatUnixTime(value.timePlayed) ||
+                'under 5 minutes'
             )
             .join('\n'),
           inline: true,
