@@ -9,6 +9,7 @@ WORKDIR /app
 COPY --from=builder /app/build ./build
 COPY package.json .
 COPY yarn.lock .
+COPY ./assets ./assets
 RUN yarn install --production
 
 CMD [ "yarn", "start" ]
