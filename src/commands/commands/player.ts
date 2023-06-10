@@ -56,7 +56,7 @@ export default new Command({
       databasePlayer.history as (ServerHistory & {
         server: Server;
       })[]
-    ).sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+    ).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
     const servers = await minefort.servers.getOnlineServers({limit: 500});
     HistoryManager.createHistory(servers);
@@ -110,7 +110,7 @@ export default new Command({
           name: currentlyPlaying ? 'Currently playing' : 'Last online',
           value: currentlyPlaying
             ? currentlyPlaying.name
-            : time(databaseHistory[databaseHistory.length - 1].createdAt, 'R'),
+            : time(databaseHistory[0].createdAt, 'R'),
           inline: true,
         },
       ]);
