@@ -95,7 +95,7 @@ export default new Command({
       server =>
         server.playerData.online && server.playerData.online.includes(player.id)
     );
-    const timePlayed = history.map((value, index) => {
+    const timesPlayed = history.map((value, index) => {
       const unixTime =
         (value.createdAt.getTime() - sortedHistory[index].createdAt.getTime()) /
         1000;
@@ -151,7 +151,7 @@ export default new Command({
         },
         {
           name: 'Time played',
-          value: timePlayed
+          value: timesPlayed
             .slice(0, amountArgument)
             .map(
               (value, index) =>

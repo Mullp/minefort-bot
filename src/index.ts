@@ -17,6 +17,8 @@ export const minefort = new MinefortClient();
   await client.registerEvents();
   // await client.registerModals();
 
+  await minefort.auth(env.MINEFORT_USERNAME, env.MINEFORT_PASSWORD);
+
   await client.login(env.TOKEN);
 
   cronPing.start();

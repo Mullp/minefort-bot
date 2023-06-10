@@ -6,8 +6,8 @@ import {
   ButtonBuilder,
   ButtonStyle,
   hyperlink,
-  SlashCommandBuilder
-} from "discord.js";
+  SlashCommandBuilder,
+} from 'discord.js';
 
 export default new Command({
   enabled: true,
@@ -19,11 +19,6 @@ export default new Command({
 
     const inviteEmbed = client
       .getBaseEmbed(interaction)
-      .setAuthor({
-        name: 'Minefort',
-        iconURL: client.user?.displayAvatarURL(),
-        url: 'https://github.com/Mullp/minefort-bot',
-      })
       .setDescription(
         `${hyperlink(
           bold('Invite the bot to your server by clicking here.'),

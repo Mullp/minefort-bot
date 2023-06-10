@@ -29,6 +29,11 @@ export class DiscordClient extends Client implements IDiscordClient {
   public getBaseEmbed(interaction: Interaction): EmbedBuilder {
     return new EmbedBuilder()
       .setColor('#ff03a7')
+      .setAuthor({
+        name: 'Minefort Utils',
+        iconURL: this.user?.displayAvatarURL(),
+        url: 'https://github.com/Mullp/minefort-bot',
+      })
       .setTimestamp()
       .setFooter({
         text: `Requested by ${

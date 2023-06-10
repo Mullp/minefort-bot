@@ -10,3 +10,5 @@ services:
       CLIENT_ID:
       GUILD_ID:
       DATABASE_URL:
+      MINEFORT_USERNAME:
+      MINEFORT_PASSWORD:
