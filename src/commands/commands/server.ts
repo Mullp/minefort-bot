@@ -155,11 +155,7 @@ export default new Command({
         },
         {
           name: 'Owner ID',
-          value: inlineCode(
-            MinefortUtils.getMinefortIdFromAuth0Id(
-              server?.ownerId ?? databaseServer.owner.minefortId
-            )
-          ),
+          value: inlineCode(server?.ownerId ?? databaseServer.owner.minefortId),
           // \n\nUse ${chatInputApplicationCommandMention(
           //   'servers',
           //   'user',

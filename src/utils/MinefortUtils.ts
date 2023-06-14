@@ -36,24 +36,6 @@ export class MinefortUtils {
   }
 
   /**
-   * Gets the Minefort ID from the auth0 ID.
-   * @param auth0Id - The auth0 ID.
-   * @returns The Minefort ID.
-   */
-  public static getMinefortIdFromAuth0Id(auth0Id: string): string {
-    return auth0Id.includes('auth0|') ? auth0Id.split('auth0|')[1] : auth0Id;
-  }
-
-  /**
-   * Checks whether a Minefort ID has two-factor authentication enabled.
-   * @param minefortId - The Minefort ID.
-   * @returns Whether two-factor authentication is enabled.
-   */
-  public static hasTwoFactorEnabled(minefortId: string): boolean {
-    return minefortId.includes('auth0|');
-  }
-
-  /**
    * Gets the server version from the full version.
    * @param version - The full version.
    * @returns The server version.
