@@ -14,8 +14,7 @@ import {minefort} from '../../index';
 import {MinefortUtils} from '../../utils/MinefortUtils';
 import {PlayerUtils} from '../../utils/PlayerUtils';
 import {HistoryManager} from '../../history/HistoryManager';
-import {ServerModel} from '../../database/models/ServerModel';
-import {ServerHistory} from '../../database/models/ServerHistoryModel';
+import {prisma} from '../../client/prisma/PrismaClient';
 
 export default new Command({
   enabled: true,
@@ -42,20 +41,45 @@ export default new Command({
         server.id.toLowerCase() === serverId ||
         server.name.toLowerCase() === serverId
     );
-    const databaseServer = await ServerModel.findOne({
-      serverId: server?.id ?? serverId,
-    }).populate('serverHistory');
+    const databaseServer =
+      (await prisma.minefortServer.findUnique({
+        where: {
+          serverId: server?.id ?? serverId,
+        },
+        include: {
+          history: {
+            include: {
+              players: true,
+            },
+          },
+          owner: true,
+        },
+      })) ??
+      (await prisma.minefortServer.findFirst({
+        where: {
+          name: server?.name ?? serverId,
+        },
+        include: {
+          history: {
+            include: {
+              players: true,
+            },
+          },
+          owner: true,
+        },
+      }));
 
-    if (!(server && databaseServer)) {
+    if (!databaseServer) {
       await interaction.editReply({
         content: 'Server not found',
       });
       return;
     }
 
-    const serverHistory = databaseServer.serverHistory as ServerHistory[];
+    const serverHistory = databaseServer.history.sort(
+      (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+    );
     const sortedServerHistory = serverHistory
-      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
       .filter(
         (history, index) =>
           index === 0 ||
@@ -66,7 +90,9 @@ export default new Command({
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
     const estimatedServerPlan = MinefortUtils.getServerPlanSpecifics(
-      MinefortUtils.getEstimatedPlan(server.playerData.maxPlayers)
+      MinefortUtils.getEstimatedPlan(
+        server?.playerData.maxPlayers ?? databaseServer.maxPlayers ?? 0
+      )
     );
 
     const playersFormatted = new Intl.ListFormat('en-us', {
@@ -75,7 +101,7 @@ export default new Command({
       .format(
         (
           await Promise.all(
-            (server.playerData.online ?? []).map(uuid =>
+            (server?.playerData.online ?? []).map(uuid =>
               PlayerUtils.getPlayerByUuid(uuid).then(player => player?.name)
             )
           )
@@ -88,56 +114,89 @@ export default new Command({
     const serverEmbed = new EmbedBuilder()
       .setColor('#ff03a7')
       .setAuthor({
-        name: server.name,
-        iconURL: server.icon.image,
+        name: server
+          ? `${server.name}   (online 🟢)`
+          : `${databaseServer.name ?? 'Unknown'}   (offline 🔴)`,
+        iconURL:
+          server?.icon.image ??
+          databaseServer.iconUrl ??
+          'https://cdn.minefort.com/img/item_icons/WHITE_WOOL.png',
       })
       .setDescription(
-        `${underscore(`${server.name}.minefort.com`)}\n` +
-          codeBlock('ansi', MinefortUtils.convertColorsToAnsi(server.motd))
+        `${underscore(
+          `${server?.name ?? databaseServer.name ?? ''}.minefort.com`
+        )}\n` +
+          codeBlock(
+            'ansi',
+            MinefortUtils.convertColorsToAnsi(
+              server?.motd ?? databaseServer.motd ?? ''
+            )
+          )
       )
       .addFields([
         {
           name: 'Server ID',
-          value: `${inlineCode(server.id)}`,
+          value: inlineCode(server?.id ?? databaseServer.serverId),
           inline: true,
         },
         {
           name: 'Software',
-          value: `${MinefortUtils.getServerSoftware(server.version)}`,
+          value: `${MinefortUtils.getServerSoftware(
+            server?.version ?? databaseServer.version ?? ''
+          )}`,
           inline: true,
         },
         {
           name: 'Version',
-          value: `${MinefortUtils.getServerVersion(server.version)}`,
+          value: `${MinefortUtils.getServerVersion(
+            server?.version ?? databaseServer.version ?? ''
+          )}`,
           inline: true,
         },
         {
-          name: 'Estimated startup',
-          value: time(sortedServerHistory[0].createdAt, 'R') || 'Unknown',
-          inline: true,
-        },
-        {
-          name: '\u200b',
-          value: '\u200b',
-          inline: true,
-        },
-        {
-          name: '\u200b',
-          value: '\u200b',
-          inline: true,
-        },
-        {
-          name: 'Owner',
-          value: `Owner ID: ${inlineCode(
-            MinefortUtils.getMinefortIdFromAuth0Id(server.ownerId)
-          )}\nTwo factor: ${
-            MinefortUtils.hasTwoFactorEnabled(server.ownerId) ? 'on' : 'off'
-          }`,
+          name: 'Owner ID',
+          value: inlineCode(
+            MinefortUtils.getMinefortIdFromAuth0Id(
+              server?.ownerId ?? databaseServer.owner.minefortId
+            )
+          ),
           // \n\nUse ${chatInputApplicationCommandMention(
           //   'servers',
           //   'user',
           //   ''
           // )} to see servers owned by this user
+          inline: true,
+        },
+        {
+          name: server ? 'Estimated startup' : 'Last online',
+          value: server
+            ? time(sortedServerHistory[0].createdAt, 'R') || 'Unknown'
+            : time(serverHistory[0].createdAt, 'R') || 'Unknown',
+          inline: true,
+        },
+        {
+          name: '\u200b',
+          value: '\u200b',
+          inline: true,
+        },
+        {
+          name: 'Current rank',
+          value: server
+            ? `${MinefortUtils.getServerRankWindow(servers, server)
+                .map(
+                  value =>
+                    `${inlineCode(
+                      `#${
+                        servers.findIndex(value1 => value.id === value1.id) + 1
+                      }`
+                    )}: ${
+                      value.name === server.name
+                        ? bold(underscore(value.name))
+                        : value.name
+                    }`
+                )
+                .join('\n')}`
+            : 'Offline',
           inline: true,
         },
         {
@@ -158,23 +217,14 @@ export default new Command({
           inline: true,
         },
         {
-          name: 'Current rank',
-          value: `${MinefortUtils.getServerRankWindow(servers, server)
-            .map(
-              value =>
-                `${inlineCode(
-                  `#${servers.findIndex(value1 => value.id === value1.id) + 1}`
-                )}: ${
-                  value.name === server.name
-                    ? bold(underscore(value.name))
-                    : value.name
-                }`
-            )
-            .join('\n')}`,
+          name: '\u200b',
+          value: '\u200b',
           inline: true,
         },
         {
-          name: `Players: ${server.playerData.playerCount}/${server.playerData.maxPlayers} (Only Java players)`,
+          name: `Players: ${server?.playerData.playerCount ?? 0}/${
+            server?.playerData.maxPlayers ?? databaseServer.maxPlayers ?? 20
+          } (Only Java players)`,
           value: playersFormatted || 'No players online',
           inline: false,
         },

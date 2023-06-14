@@ -1,6 +1,5 @@
 import {Command} from '../Command';
 import {
-  ActionRow,
   ActionRowBuilder,
   bold,
   ButtonBuilder,
@@ -28,14 +27,16 @@ export default new Command({
         }&permissions=0&scope=bot%20applications.commands`
       );
 
-    const linkButton = new ButtonBuilder()
+    const inviteButton = new ButtonBuilder()
       .setLabel('Invite the bot')
       .setURL(
         `https://discord.com/api/oauth2/authorize?client_id=${client.user?.id}&permissions=0&scope=bot%20applications.commands`
       )
       .setStyle(ButtonStyle.Link);
 
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(linkButton);
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      inviteButton
+    );
 
     await interaction.editReply({
       embeds: [inviteEmbed],

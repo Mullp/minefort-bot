@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model DiscordUser {
+  id             Int           @id @default(autoincrement())
+  discordId      String        @unique
+  minefortUser   MinefortUser? @relation(fields: [minefortUserId], references: [id])
+  minefortUserId Int?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model MinefortUser {
+  id           Int              @id @default(autoincrement())
+  minefortId   String           @unique
+  email        String?
+  sessionToken String?
+  discordUser  DiscordUser[]
+  servers      MinefortServer[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+}
+
+model MinefortServer {
+  id         Int             @id @default(autoincrement())
+  serverId   String          @unique
+  owner      MinefortUser    @relation(fields: [ownerId], references: [id])
+  ownerId    Int
+  name       String?
+  motd       String?
+  iconUrl    String?
+  version    String?
+  maxPlayers Int?
+  history    ServerHistory[]
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+}
+
+model ServerHistory {
+  id        Int            @id @default(autoincrement())
+  server    MinefortServer @relation(fields: [serverId], references: [id])
+  serverId  Int
+  players   Player[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model Player {
+  id        Int             @id @default(autoincrement())
+  uuid      String          @unique
+  name      String?
+  history   ServerHistory[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+}
