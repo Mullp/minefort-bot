@@ -2,7 +2,6 @@ FROM node:20.2.0-alpine3.18 as builder
 WORKDIR /app
 COPY . .
 RUN yarn install
-RUN npx prisma generate
 RUN yarn run compile
 
 FROM node:20.2.0-alpine3.18 as final
@@ -13,6 +12,5 @@ COPY yarn.lock .
 COPY ./assets ./assets
 COPY prisma ./prisma
 RUN yarn install --production
-RUN npx prisma generate
 
-CMD [ "yarn", "start" ]
+CMD [ "yarn", "start:migrate:prod" ]

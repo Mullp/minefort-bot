@@ -15,7 +15,8 @@
     "clean": "gts clean",
     "compile": "tsc",
     "fix": "gts fix",
-    "start": "node build/src/index.js",
+    "start:prod": "node build/src/index.js",
+    "start:migrate:prod": "prisma migrate deploy && yarn run start:prod",
     "start:dev": "yarn run clean && yarn run compile && yarn run start",
     "deploy-guild-cmds": "ts-node scripts/deploy-guild-commands.ts",
     "deploy-cmds": "ts-node scripts/deploy-commands.ts"
