@@ -14,6 +14,5 @@ COPY ./assets ./assets
 COPY prisma ./prisma
 RUN yarn install --production
 RUN npx prisma generate
-RUN npx prisma migrate deploy
 
 CMD [ "yarn", "start" ]
