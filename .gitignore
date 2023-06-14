@@ -43,3 +43,6 @@ yarn.lock
 # Database
 *.db
 *.db-journal
+
+# Docker
+docker-compose.yml

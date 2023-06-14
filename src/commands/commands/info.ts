@@ -47,7 +47,7 @@ export default new Command({
 
     const inviteButton = new ButtonBuilder()
       .setLabel('Invite the bot')
-      .setEmoji({id: '1118616483791114321', name: 'minefortwhite'})
+      .setEmoji({id: '1118632905950900257', name: 'minefortwhite'})
       .setURL(
         `https://discord.com/api/oauth2/authorize?client_id=${client.user?.id}&permissions=0&scope=bot%20applications.commands`
       )

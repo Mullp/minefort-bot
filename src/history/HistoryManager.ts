@@ -6,7 +6,7 @@ export class HistoryManager {
 
   public static async createHistory(servers: Server[]) {
     // 1 minute cooldown
-    if (this.lastUpdate && Date.now() - this.lastUpdate.getTime() < 1000 * 5) {
+    if (this.lastUpdate && Date.now() - this.lastUpdate.getTime() < 1000 * 60) {
       console.log('History already created in the last minute');
       return;
     }
@@ -18,55 +18,66 @@ export class HistoryManager {
     for (const server of servers) {
       if (!server.playerData.online) continue;
 
-      await prisma.serverHistory.create({
-        data: {
-          players: {
-            connectOrCreate: server.playerData.online.map(player => {
-              return {
-                where: {
-                  uuid: player,
-                },
-                create: {
-                  uuid: player,
-                },
-              };
-            }),
-          },
-          server: {
-            connectOrCreate: {
-              where: {
-                serverId: server.id,
-              },
-              create: {
-                serverId: server.id,
-                owner: {
-                  connectOrCreate: {
+      await prisma.minefortServer.upsert({
+        where: {
+          serverId: server.id,
+        },
+        update: {
+          name: server.name,
+          motd: server.motd,
+          iconUrl: server.icon.image,
+          version: server.version,
+          maxPlayers: server.playerData.maxPlayers,
+          history: {
+            create: {
+              players: {
+                connectOrCreate: server.playerData.online.map(player => {
+                  return {
                     where: {
-                      minefortId: server.ownerId,
+                      uuid: player,
                     },
                     create: {
-                      minefortId: server.ownerId,
+                      uuid: player,
                     },
-                  },
-                },
-                name: server.name,
-                motd: server.motd,
+                  };
+                }),
               },
             },
           },
         },
-      });
-
-      await prisma.minefortServer.update({
-        where: {
+        create: {
           serverId: server.id,
-        },
-        data: {
-          motd: server.motd,
+          owner: {
+            connectOrCreate: {
+              where: {
+                minefortId: server.ownerId,
+              },
+              create: {
+                minefortId: server.ownerId,
+              },
+            },
+          },
           name: server.name,
+          motd: server.motd,
           iconUrl: server.icon.image,
           version: server.version,
           maxPlayers: server.playerData.maxPlayers,
+          history: {
+            create: {
+              players: {
+                connectOrCreate: server.playerData.online.map(player => {
+                  return {
+                    where: {
+                      uuid: player,
+                    },
+                    create: {
+                      uuid: player,
+                    },
+                  };
+                }),
+              },
+            },
+          },
         },
       });
     }

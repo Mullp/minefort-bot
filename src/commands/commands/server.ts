@@ -2,6 +2,7 @@ import {Command} from '../Command';
 import {
   ApplicationCommandOptionChoiceData,
   bold,
+  chatInputApplicationCommandMention,
   codeBlock,
   EmbedBuilder,
   hyperlink,
@@ -154,20 +155,15 @@ export default new Command({
           inline: true,
         },
         {
-          name: 'Owner ID',
-          value: inlineCode(server?.ownerId ?? databaseServer.owner.minefortId),
-          // \n\nUse ${chatInputApplicationCommandMention(
-          //   'servers',
-          //   'user',
-          //   ''
-          // )} to see servers owned by this user
-          inline: true,
-        },
-        {
           name: server ? 'Estimated startup' : 'Last online',
           value: server
             ? time(sortedServerHistory[0].createdAt, 'R') || 'Unknown'
             : time(serverHistory[0].createdAt, 'R') || 'Unknown',
+          inline: true,
+        },
+        {
+          name: '\u200b',
+          value: '\u200b',
           inline: true,
         },
         {
@@ -213,8 +209,14 @@ export default new Command({
           inline: true,
         },
         {
-          name: '\u200b',
-          value: '\u200b',
+          name: 'Owner ID',
+          value: `${inlineCode(
+            server?.ownerId ?? databaseServer.owner.minefortId
+          )}
+          \n\nUse ${chatInputApplicationCommandMention(
+            'servers',
+            '1118634596003754104'
+          )} to see servers owned by this user`,
           inline: true,
         },
         {
