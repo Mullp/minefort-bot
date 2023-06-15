@@ -17,7 +17,7 @@
     "fix": "gts fix",
     "start:prod": "node build/src/index.js",
     "start:migrate:prod": "prisma migrate deploy && yarn run start:prod",
-    "start:dev": "yarn run clean && yarn run compile && yarn run start",
+    "start:dev": "yarn run clean && yarn run compile && yarn run start:prod",
     "deploy-guild-cmds": "ts-node scripts/deploy-guild-commands.ts",
     "deploy-cmds": "ts-node scripts/deploy-commands.ts"
   },
@@ -35,6 +35,7 @@
     "dotenv": "^16.1.4",
     "minefort": "^4.2.0",
     "node-cron": "^3.0.2",
-    "prisma": "^4.15.0"
+    "prisma": "^4.15.0",
+    "redis": "^4.6.7"
   }
 }

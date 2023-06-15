@@ -7,11 +7,13 @@ services:
       - TOKEN=
       - CLIENT_ID=
       - GUILD_ID=
-      - DATABASE_URL=
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/postgres?schema=public
+      - REDIS_URL=redis://redis:6379
       - MINEFORT_USERNAME=
       - MINEFORT_PASSWORD=
     depends_on:
       - postgres
+      - redis
   postgres:
     image: postgres:14.1-alpine
     restart: always
@@ -22,6 +24,11 @@ services:
       - "5432:5432"
     volumes:
       - db:/var/lib/postgresql/data
+  redis:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - "6379:6379"
 volumes:
   db:
     driver: local

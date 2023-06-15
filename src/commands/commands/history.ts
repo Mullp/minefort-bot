@@ -12,6 +12,8 @@ import {minefort} from '../../index';
 import {HistoryManager} from '../../history/HistoryManager';
 import {StringUtils} from '../../utils/StringUtils';
 import {prisma} from '../../client/prisma/PrismaClient';
+import {redis} from '../../client/redis/RedisClient';
+import {Player} from '../../typings/PlayerTypings';
 
 export default new Command({
   enabled: true,
@@ -59,11 +61,6 @@ export default new Command({
       return;
     }
 
-    // const databasePlayer = await PlayerModel.findOne({
-    //   uuid: player.id,
-    // })
-    //   .populate('history')
-    //   .populate({path: 'history', populate: {path: 'server'}});
     const databasePlayer = await prisma.player.findUnique({
       where: {
         uuid: player.id,
@@ -107,7 +104,7 @@ export default new Command({
       )
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
-    const servers = await minefort.servers.getOnlineServers({limit: 500});
+    const servers = await minefort.getOnlineServers({limit: 500});
     HistoryManager.createHistory(servers);
     const currentlyPlaying = servers.find(
       server =>
@@ -193,12 +190,23 @@ export default new Command({
   autocomplete: async (client, interaction) => {
     const playerArgument = interaction.options.getString('player', true);
 
-    const players = Array.from(PlayerUtils.playerCache.values());
-    const choices: ApplicationCommandOptionChoiceData[] = players.map(
-      player => {
-        return {name: player.player.name, value: player.player.name};
-      }
+    const players = await redis.keys('player:uuid:*').then(keys =>
+      Promise.all(
+        keys.map(key =>
+          redis.get(key).then(player => {
+            return {
+              key,
+              player: player !== null ? (JSON.parse(player) as Player) : null,
+            };
+          })
+        )
+      )
     );
+    const choices: ApplicationCommandOptionChoiceData[] = players
+      .filter(player => player.player !== null)
+      .map(player => {
+        return {name: player.player!.name, value: player.player!.name};
+      });
 
     const filtered = client.sortAutocompleteChoices(choices, playerArgument);
     await interaction.respond(filtered);
