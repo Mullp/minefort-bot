@@ -2,7 +2,6 @@ import {
   ApplicationCommandOptionChoiceData,
   ClientEvents,
   Collection,
-  EmbedBuilder,
 } from 'discord.js';
 import {Command} from '../../commands/Command';
 import {Modal} from '../../modals/Modal';

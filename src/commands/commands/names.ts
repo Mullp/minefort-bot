@@ -39,22 +39,14 @@ export default new Command({
     const length = interaction.options.getInteger('length', false);
     const regex = interaction.options.getString('regex', false);
 
-    const names = words
-      .filter(name => {
-        if (length) {
-          return name.length === length;
-        }
-        return true;
-      })
-      .filter(name => {
-        if (regex) {
-          return new RegExp(regex).test(name);
-        }
-        return true;
-      });
-    // if (length) {
-    //   names = names.filter(name => name.length === length);
-    // }
+    let names = words;
+    if (length) {
+      names = names.filter(name => name.length === length);
+    }
+    if (regex) {
+      const regExp = new RegExp(regex);
+      names = names.filter(name => regExp.test(name));
+    }
 
     const checkedNames: string[] = [];
     const availableNames = (

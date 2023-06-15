@@ -10,6 +10,7 @@ COPY --from=builder /app/build ./build
 COPY package.json .
 COPY yarn.lock .
 COPY ./assets ./assets
+COPY prisma ./prisma
 RUN yarn install --production
 
-CMD [ "yarn", "start" ]
+CMD [ "yarn", "start:migrate:prod" ]

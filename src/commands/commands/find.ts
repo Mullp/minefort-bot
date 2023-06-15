@@ -11,9 +11,7 @@ import {
 import {minefort} from '../../index';
 import {PlayerUtils} from '../../utils/PlayerUtils';
 import {HistoryManager} from '../../history/HistoryManager';
-import {PlayerModel} from '../../database/models/PlayerModel';
-import {ServerHistory} from '../../database/models/ServerHistoryModel';
-import {Server} from '../../database/models/ServerModel';
+import {prisma} from '../../client/prisma/PrismaClient';
 
 export default new Command({
   enabled: true,
@@ -44,11 +42,18 @@ export default new Command({
     const servers = await minefort.servers.getOnlineServers({limit: 500});
     HistoryManager.createHistory(servers);
 
-    const databasePlayer = await PlayerModel.findOne({
-      uuid: player.id,
-    })
-      .populate('history')
-      .populate({path: 'history', populate: {path: 'server'}});
+    const databasePlayer = await prisma.player.findUnique({
+      where: {
+        uuid: player.id,
+      },
+      include: {
+        history: {
+          include: {
+            server: true,
+          },
+        },
+      },
+    });
     if (!databasePlayer) {
       await interaction.editReply({
         content: 'Player not found',
@@ -71,24 +76,23 @@ export default new Command({
       return;
     }
 
-    const databaseHistory = databasePlayer.history as (ServerHistory & {
-      server: Server;
-    })[];
+    const databaseHistory = databasePlayer.history.sort(
+      (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+    );
     const history = databaseHistory
-      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
       .filter(
         (value, index) =>
           index === 0 ||
-          value.server.serverName !==
-            databaseHistory[index - 1].server.serverName ||
+          value.server.name !== databaseHistory[index - 1].server.name ||
           value.createdAt.getTime() -
             databaseHistory[index - 1].createdAt.getTime() >
             1000 * 60 * 6
       )
-      .filter(history => history.server.serverName === server.name)
+      .filter(history => history.server.name === server.name)
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
-    const joinedAtHistory = history[0].createdAt;
+    const joinedAtHistory =
+      history[0]?.createdAt ?? Math.round(new Date().getTime() / 1000);
 
     findEmbed.setDescription(
       `${hyperlink(

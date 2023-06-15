@@ -1,9 +1,5 @@
 import {Server} from 'minefort';
-import {MinefortUserModel} from '../database/models/MinefortUser.model';
-import {ServerHistoryModel} from '../database/models/ServerHistoryModel';
-import {PlayerModel} from '../database/models/PlayerModel';
-import {ServerModel} from '../database/models/ServerModel';
-import {MinefortUtils} from '../utils/MinefortUtils';
+import {prisma} from '../client/prisma/PrismaClient';
 
 export class HistoryManager {
   public static lastUpdate: Date;
@@ -22,43 +18,68 @@ export class HistoryManager {
     for (const server of servers) {
       if (!server.playerData.online) continue;
 
-      const minefortPlayerDocuments = await Promise.all(
-        server.playerData.online.map(player => {
-          return PlayerModel.findOneAndUpdate(
-            {uuid: player},
-            {},
-            {upsert: true, new: true}
-          );
-        })
-      );
-
-      const serverDocument = await ServerModel.findOneAndUpdate(
-        {serverId: server.id},
-        {
-          $set: {
-            serverName: server.name,
+      await prisma.minefortServer.upsert({
+        where: {
+          serverId: server.id,
+        },
+        update: {
+          name: server.name,
+          motd: server.motd,
+          iconUrl: server.icon.image,
+          version: server.version,
+          maxPlayers: server.playerData.maxPlayers,
+          history: {
+            create: {
+              players: {
+                connectOrCreate: server.playerData.online.map(player => {
+                  return {
+                    where: {
+                      uuid: player,
+                    },
+                    create: {
+                      uuid: player,
+                    },
+                  };
+                }),
+              },
+            },
           },
         },
-        {
-          new: true,
-          upsert: true,
-        }
-      );
-
-      const serverHistoryDocument = await ServerHistoryModel.create({
-        server: serverDocument.id,
-        players: minefortPlayerDocuments.map(player => player.id),
+        create: {
+          serverId: server.id,
+          owner: {
+            connectOrCreate: {
+              where: {
+                minefortId: server.ownerId,
+              },
+              create: {
+                minefortId: server.ownerId,
+              },
+            },
+          },
+          name: server.name,
+          motd: server.motd,
+          iconUrl: server.icon.image,
+          version: server.version,
+          maxPlayers: server.playerData.maxPlayers,
+          history: {
+            create: {
+              players: {
+                connectOrCreate: server.playerData.online.map(player => {
+                  return {
+                    where: {
+                      uuid: player,
+                    },
+                    create: {
+                      uuid: player,
+                    },
+                  };
+                }),
+              },
+            },
+          },
+        },
       });
-
-      await MinefortUserModel.findOneAndUpdate(
-        {minefortId: MinefortUtils.getMinefortIdFromAuth0Id(server.ownerId)},
-        {
-          $addToSet: {
-            servers: serverDocument.id,
-          },
-        },
-        {new: true, upsert: true}
-      );
     }
 
     console.log('History created');

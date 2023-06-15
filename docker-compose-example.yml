@@ -1,0 +1,27 @@
+version: "3.8"
+services:
+  bot:
+    image: minefort-bot
+    restart: always
+    environment:
+      - TOKEN=
+      - CLIENT_ID=
+      - GUILD_ID=
+      - DATABASE_URL=
+      - MINEFORT_USERNAME=
+      - MINEFORT_PASSWORD=
+    depends_on:
+      - postgres
+  postgres:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - db:/var/lib/postgresql/data
+volumes:
+  db:
+    driver: local

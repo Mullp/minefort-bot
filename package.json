@@ -15,7 +15,8 @@
     "clean": "gts clean",
     "compile": "tsc",
     "fix": "gts fix",
-    "start": "node build/src/index.js",
+    "start:prod": "node build/src/index.js",
+    "start:migrate:prod": "prisma migrate deploy && yarn run start:prod",
     "start:dev": "yarn run clean && yarn run compile && yarn run start",
     "deploy-guild-cmds": "ts-node scripts/deploy-guild-commands.ts",
     "deploy-cmds": "ts-node scripts/deploy-commands.ts"
@@ -27,13 +28,13 @@
     "typescript": "~4.9.0"
   },
   "dependencies": {
-    "@typegoose/typegoose": "^11.2.0",
+    "@prisma/client": "^4.15.0",
     "cross-fetch": "^3.1.6",
     "discord-api-types": "^0.37.43",
     "discord.js": "^14.11.0",
     "dotenv": "^16.1.4",
     "minefort": "^4.2.0",
-    "mongoose": "7.2.0",
-    "node-cron": "^3.0.2"
+    "node-cron": "^3.0.2",
+    "prisma": "^4.15.0"
   }
 }

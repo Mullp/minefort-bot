@@ -7,13 +7,11 @@ import {
   time,
 } from 'discord.js';
 import {PlayerUtils} from '../../utils/PlayerUtils';
-import {PlayerModel} from '../../database/models/PlayerModel';
-import {ServerHistory} from '../../database/models/ServerHistoryModel';
-import {Server} from '../../database/models/ServerModel';
 import {minefort} from '../../index';
 import {HistoryManager} from '../../history/HistoryManager';
 import {MinefortUtils} from '../../utils/MinefortUtils';
 import {StringUtils} from '../../utils/StringUtils';
+import {prisma} from '../../client/prisma/PrismaClient';
 
 export default new Command({
   enabled: true,
@@ -40,11 +38,18 @@ export default new Command({
       return;
     }
 
-    const databasePlayer = await PlayerModel.findOne({
-      uuid: player.id,
-    })
-      .populate('history')
-      .populate({path: 'history', populate: {path: 'server'}});
+    const databasePlayer = await prisma.player.findUnique({
+      where: {
+        uuid: player.id,
+      },
+      include: {
+        history: {
+          include: {
+            server: true,
+          },
+        },
+      },
+    });
     if (!databasePlayer) {
       await interaction.editReply({
         content: 'Player not found',
@@ -52,11 +57,9 @@ export default new Command({
       return;
     }
 
-    const databaseHistory = (
-      databasePlayer.history as (ServerHistory & {
-        server: Server;
-      })[]
-    ).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    const databaseHistory = databasePlayer.history.sort(
+      (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+    );
 
     const servers = await minefort.servers.getOnlineServers({limit: 500});
     HistoryManager.createHistory(servers);
