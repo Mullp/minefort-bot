@@ -43,9 +43,12 @@ export default new Command({
         server.name.toLowerCase() === serverId
     );
     const databaseServer =
-      (await prisma.minefortServer.findUnique({
+      (await prisma.minefortServer.findFirst({
         where: {
-          serverId: server?.id ?? serverId,
+          serverId: {
+            equals: server?.id ?? serverId,
+            mode: 'insensitive',
+          },
         },
         include: {
           history: {
@@ -58,7 +61,10 @@ export default new Command({
       })) ??
       (await prisma.minefortServer.findFirst({
         where: {
-          name: server?.name ?? serverId,
+          name: {
+            equals: server?.name ?? serverId,
+            mode: 'insensitive',
+          },
         },
         include: {
           history: {
