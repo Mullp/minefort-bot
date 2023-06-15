@@ -1,36 +1,36 @@
 import fetch from 'cross-fetch';
 import {Player} from '../typings/PlayerTypings';
+import {redis} from '../client/redis/RedisClient';
 
 export class PlayerUtils {
-  public static readonly playerCache: Map<
-    string,
-    {player: Player; createdAt: Date}
-  > = new Map();
-
   /**
    * Gets a player from the Mojang API by UUID, and caches it for 20 days.
    * @param uuid - The UUID of the player to get
    * @returns The player
    */
   public static async getPlayerByUuid(uuid: string) {
-    const player = this.playerCache.get(uuid);
+    const player = await redis.get(`player:uuid:${uuid}`);
 
     if (player) {
-      const diffInMs = Date.now() - player.createdAt.getTime();
-
-      // 20 days
-      if (1000 * 60 * 60 * 24 * 20 > diffInMs) {
-        return player.player;
-      }
+      return JSON.parse(player) as Player;
     }
 
     return await fetch(
       `https://sessionserver.mojang.com/session/minecraft/profile/${uuid}`
     )
       .then(res => res.json() as Promise<Player>)
-      .then(res => {
+      .then(async res => {
         res.id = PlayerUtils.convertPlayerIdToUuid(res.id);
-        this.playerCache.set(uuid, {player: res, createdAt: new Date()});
+        await redis.setEx(
+          `player:uuid:${res.id}`,
+          60 * 60 * 24 * 5,
+          JSON.stringify(res)
+        );
+        await redis.setEx(
+          `player:username:${res.name.toLowerCase()}`,
+          60 * 60 * 24 * 5,
+          JSON.stringify(res)
+        );
 
         return res;
       })
@@ -43,28 +43,28 @@ export class PlayerUtils {
    * @returns The player
    */
   public static async getPlayerByName(username: string) {
-    // Check if the player is cached
-    for (const [uuid, player] of this.playerCache) {
-      if (player.player.name === username) {
-        const diffInMs = Date.now() - player.createdAt.getTime();
+    const player = await redis.get(`player:username:${username.toLowerCase()}`);
 
-        // 20 days
-        if (1000 * 60 * 60 * 24 * 20 > diffInMs) {
-          return player.player;
-        }
-      }
+    if (player) {
+      return JSON.parse(player) as Player;
     }
 
     return await fetch(
       `https://api.mojang.com/users/profiles/minecraft/${username}`
     )
       .then(res => res.json() as Promise<Player>)
-      .then(res => {
+      .then(async res => {
         res.id = PlayerUtils.convertPlayerIdToUuid(res.id);
-        this.playerCache.set(res.id, {
-          player: res,
-          createdAt: new Date(),
-        });
+        await redis.setEx(
+          `player:uuid:${res.id}`,
+          60 * 60 * 24 * 5,
+          JSON.stringify(res)
+        );
+        await redis.setEx(
+          `player:username:${res.name.toLowerCase()}`,
+          60 * 60 * 24 * 5,
+          JSON.stringify(res)
+        );
 
         return res;
       })

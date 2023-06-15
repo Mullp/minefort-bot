@@ -35,7 +35,7 @@ export default new Command({
     const serverId = interaction.options
       .getString('server', true)
       .toLowerCase();
-    const servers = await minefort.servers.getOnlineServers({limit: 500});
+    const servers = await minefort.getOnlineServers({limit: 500});
     HistoryManager.createHistory(servers);
     const server = servers.find(
       server =>
@@ -248,7 +248,7 @@ export default new Command({
   autocomplete: async (client, interaction) => {
     const serverArgument = interaction.options.getString('server', true);
 
-    const servers = await minefort.servers.getOnlineServers();
+    const servers = await minefort.getOnlineServers();
     HistoryManager.createHistory(servers);
     const choices: ApplicationCommandOptionChoiceData[] = servers.map(
       server => {

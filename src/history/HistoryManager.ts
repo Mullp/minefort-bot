@@ -7,13 +7,10 @@ export class HistoryManager {
   public static async createHistory(servers: Server[]) {
     // 1 minute cooldown
     if (this.lastUpdate && Date.now() - this.lastUpdate.getTime() < 1000 * 60) {
-      console.log('History already created in the last minute');
       return;
     }
 
     this.lastUpdate = new Date();
-
-    console.log('Creating history...');
 
     for (const server of servers) {
       if (!server.playerData.online) continue;
@@ -81,7 +78,5 @@ export class HistoryManager {
         },
       });
     }
-
-    console.log('History created');
   }
 }
