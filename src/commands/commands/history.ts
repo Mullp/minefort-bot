@@ -12,8 +12,8 @@ import {minefort} from '../../index';
 import {HistoryManager} from '../../history/HistoryManager';
 import {StringUtils} from '../../utils/StringUtils';
 import {prisma} from '../../client/prisma/PrismaClient';
-import { redis } from "../../client/redis/RedisClient";
-import { Player } from "../../typings/PlayerTypings";
+import {redis} from '../../client/redis/RedisClient';
+import {Player} from '../../typings/PlayerTypings';
 
 export default new Command({
   enabled: true,
