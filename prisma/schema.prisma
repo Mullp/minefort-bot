@@ -27,6 +27,7 @@ model Follow {
   minefortServer   MinefortServer @relation(fields: [minefortServerId], references: [id])
   minefortServerId Int
   webhookUrl       String
+  events           String[]
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 }
