@@ -1,7 +1,7 @@
-import {Event} from '../Event';
+import {DiscordEvent} from '../DiscordEvent';
 import {ActivityType} from 'discord-api-types/v10';
 
-export default new Event({
+export default new DiscordEvent({
   enabled: true,
   event: 'ready',
   once: true,

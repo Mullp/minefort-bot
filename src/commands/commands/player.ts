@@ -7,8 +7,7 @@ import {
   time,
 } from 'discord.js';
 import {PlayerUtils} from '../../utils/PlayerUtils';
-import {minefort} from '../../index';
-import {HistoryManager} from '../../history/HistoryManager';
+import {minefortClient} from '../../index';
 import {MinefortUtils} from '../../utils/MinefortUtils';
 import {StringUtils} from '../../utils/StringUtils';
 import {prisma} from '../../client/prisma/PrismaClient';
@@ -63,8 +62,7 @@ export default new Command({
       (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
     );
 
-    const servers = await minefort.getOnlineServers({limit: 500});
-    HistoryManager.createHistory(servers);
+    const servers = await minefortClient.getOnlineServers({limit: 500});
 
     const currentlyPlaying = servers.find(
       server =>

@@ -1,6 +1,6 @@
-import {Event} from '../Event';
+import {DiscordEvent} from '../DiscordEvent';
 
-export default new Event({
+export default new DiscordEvent({
   enabled: true,
   event: 'interactionCreate',
   once: false,

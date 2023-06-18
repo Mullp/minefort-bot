@@ -11,10 +11,9 @@ import {
   time,
   underscore,
 } from 'discord.js';
-import {minefort} from '../../index';
+import {minefortClient} from '../../index';
 import {MinefortUtils} from '../../utils/MinefortUtils';
 import {PlayerUtils} from '../../utils/PlayerUtils';
-import {HistoryManager} from '../../history/HistoryManager';
 import {prisma} from '../../client/prisma/PrismaClient';
 
 export default new Command({
@@ -35,8 +34,7 @@ export default new Command({
     const serverId = interaction.options
       .getString('server', true)
       .toLowerCase();
-    const servers = await minefort.getOnlineServers({limit: 500});
-    HistoryManager.createHistory(servers);
+    const servers = await minefortClient.getOnlineServers({limit: 500});
     const server = servers.find(
       server =>
         server.id.toLowerCase() === serverId ||
@@ -248,8 +246,7 @@ export default new Command({
   autocomplete: async (client, interaction) => {
     const serverArgument = interaction.options.getString('server', true);
 
-    const servers = await minefort.getOnlineServers();
-    HistoryManager.createHistory(servers);
+    const servers = await minefortClient.getOnlineServers();
     const choices: ApplicationCommandOptionChoiceData[] = servers.map(
       server => {
         return {name: server.name, value: server.id};
