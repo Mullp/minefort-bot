@@ -120,8 +120,8 @@ export default new Command({
       .setColor('#ff03a7')
       .setAuthor({
         name: server
-          ? `${server.name}   (online 🟢)`
-          : `${databaseServer.name ?? 'Unknown'}   (offline 🔴)`,
+          ? `${server.name} • (online 🟢)`
+          : `${databaseServer.name ?? 'Unknown'} • (offline 🔴)`,
         iconURL:
           server?.icon.image ??
           databaseServer.iconUrl ??
