@@ -10,13 +10,13 @@ import {
 import {IDiscordClient} from './IDiscordClient';
 import {Command} from '../../commands/Command';
 import {Modal} from '../../modals/Modal';
-import {Event} from '../../events/Event';
+import {DiscordEvent} from '../../events/discord/DiscordEvent';
 import {join} from 'path';
 import {readdirSync} from 'fs';
 
 export class DiscordClient extends Client implements IDiscordClient {
   public readonly commands: Collection<string, Command>;
-  public readonly events: Collection<string, Event<keyof ClientEvents>>;
+  public readonly events: Collection<string, DiscordEvent<keyof ClientEvents>>;
   public readonly modals: Collection<string, Modal>;
 
   constructor(clientOptions: ClientOptions) {
@@ -65,14 +65,15 @@ export class DiscordClient extends Client implements IDiscordClient {
   }
 
   public async registerEvents(): Promise<void> {
-    const eventsPath = join(__dirname, '../../events/events');
+    const eventsPath = join(__dirname, '../../events/discord/events');
     const eventFiles = readdirSync(eventsPath).filter(file =>
       file.endsWith('.js')
     );
 
     for (const file of eventFiles) {
       const filePath = join(eventsPath, file);
-      const event: Event<keyof ClientEvents> = (await import(filePath)).default;
+      const event: DiscordEvent<keyof ClientEvents> = (await import(filePath))
+        .default;
 
       if (event.enabled === false) return;
 

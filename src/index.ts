@@ -4,19 +4,21 @@ import {env} from './utils/env';
 import {MinefortClient} from './client/minefort/MinefortClient';
 import {cronPing} from './history/cron-ping';
 
-export const client = new DiscordClient({
+export const discordClient = new DiscordClient({
   intents: [GatewayIntentBits.Guilds],
 });
-export const minefort = new MinefortClient();
+export const minefortClient = new MinefortClient();
 
 (async () => {
-  await client.registerCommands();
-  await client.registerEvents();
+  await discordClient.registerCommands();
+  await discordClient.registerEvents();
   // await client.registerModals();
 
-  await minefort.auth(env.MINEFORT_USERNAME, env.MINEFORT_PASSWORD);
+  await minefortClient.registerEvents();
 
-  await client.login(env.TOKEN);
+  await minefortClient.auth(env.MINEFORT_USERNAME, env.MINEFORT_PASSWORD);
+
+  await discordClient.login(env.TOKEN);
 
   cronPing.start();
 })();

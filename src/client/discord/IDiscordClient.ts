@@ -5,11 +5,11 @@ import {
 } from 'discord.js';
 import {Command} from '../../commands/Command';
 import {Modal} from '../../modals/Modal';
-import {Event} from '../../events/Event';
+import {DiscordEvent} from '../../events/discord/DiscordEvent';
 
 export interface IDiscordClient {
   readonly commands: Collection<string, Command>;
-  readonly events: Collection<string, Event<keyof ClientEvents>>;
+  readonly events: Collection<string, DiscordEvent<keyof ClientEvents>>;
   readonly modals: Collection<string, Modal>;
   registerCommands(): Promise<void>;
   registerEvents(): Promise<void>;

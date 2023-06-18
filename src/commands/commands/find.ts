@@ -8,9 +8,8 @@ import {
   time,
   underscore,
 } from 'discord.js';
-import {minefort} from '../../index';
+import {minefortClient} from '../../index';
 import {PlayerUtils} from '../../utils/PlayerUtils';
-import {HistoryManager} from '../../history/HistoryManager';
 import {prisma} from '../../client/prisma/PrismaClient';
 import {redis} from '../../client/redis/RedisClient';
 import {Player} from '../../typings/PlayerTypings';
@@ -41,8 +40,7 @@ export default new Command({
       return;
     }
 
-    const servers = await minefort.getOnlineServers({limit: 500});
-    HistoryManager.createHistory(servers);
+    const servers = await minefortClient.getOnlineServers({limit: 500});
 
     const databasePlayer = await prisma.player.findUnique({
       where: {
