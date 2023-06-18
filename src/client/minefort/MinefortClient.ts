@@ -61,12 +61,12 @@ export class MinefortClient
         }
       }
     }
-    for (const server of this.oldResponse) {
-      if (!servers.includes(server)) {
-        this.emit('serverStop', server);
-        if (!server.playerData.online) continue;
-        for (const player of server.playerData.online) {
-          this.emit('serverPlayerLeave', server, player);
+    for (const oldServer of this.oldResponse) {
+      if (!servers.map(s => s.id).includes(oldServer.id)) {
+        this.emit('serverStop', oldServer);
+        if (!oldServer.playerData.online) continue;
+        for (const player of oldServer.playerData.online) {
+          this.emit('serverPlayerLeave', oldServer, player);
         }
       }
     }

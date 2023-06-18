@@ -5,8 +5,10 @@ import {
   parseWebhookURL,
   SlashCommandBuilder,
   time,
+  WebhookClient,
 } from 'discord.js';
 import {prisma} from '../../client/prisma/PrismaClient';
+import {discordClient} from '../../index';
 
 export default new Command({
   enabled: true,
@@ -139,7 +141,7 @@ export default new Command({
         return;
       }
 
-      await prisma.follow.create({
+      const follow = await prisma.follow.create({
         data: {
           webhookUrl: webhookArgument,
           minefortServer: {
@@ -172,6 +174,31 @@ export default new Command({
       await interaction.editReply({
         embeds: [successEmbed],
       });
+
+      const webhookClient = new WebhookClient({url: webhookArgument});
+      const webhookEmbed = client
+        .getBaseEmbed(interaction)
+        .setTitle('Followed server')
+        .setDescription(
+          `This webhook will now receive notifications about the server ${inlineCode(
+            databaseServer.name ?? 'Unknown'
+          )}.`
+        )
+        .setFooter({text: 'Minefort Utils'});
+
+      await webhookClient
+        .send({
+          embeds: [webhookEmbed],
+          username: 'Minefort Utils',
+          avatarURL: discordClient.user?.displayAvatarURL(),
+        })
+        .catch(async () => {
+          await prisma.follow.delete({
+            where: {
+              id: follow.id,
+            },
+          });
+        });
     } else if (subcommand === 'remove') {
       const serverArgument = interaction.options.getString('server', true);
 
@@ -254,6 +281,31 @@ export default new Command({
       await interaction.editReply({
         embeds: [successEmbed],
       });
+
+      const webhookClient = new WebhookClient({url: unfollowFollow.webhookUrl});
+      const webhookEmbed = client
+        .getBaseEmbed(interaction)
+        .setTitle('Unfollowed server')
+        .setDescription(
+          `This webhook will no longer receive notifications for the server ${inlineCode(
+            unfollowFollow.minefortServer.name ?? 'Unknown'
+          )}.\nYou will no longer receive notifications through this webhook.`
+        )
+        .setFooter({text: 'Minefort Utils'});
+
+      await webhookClient
+        .send({
+          embeds: [webhookEmbed],
+          username: 'Minefort Utils',
+          avatarURL: discordClient.user?.displayAvatarURL(),
+        })
+        .catch(async () => {
+          await prisma.follow.delete({
+            where: {
+              id: unfollowFollow.id,
+            },
+          });
+        });
     } else if (subcommand === 'list') {
       const databaseDiscordUser = await prisma.discordUser.findUnique({
         where: {

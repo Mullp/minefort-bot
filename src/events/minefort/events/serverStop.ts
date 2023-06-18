@@ -23,14 +23,14 @@ export default new MinefortEvent({
       const webhookClient = new WebhookClient({url: follow.webhookUrl});
 
       const startedEmbed = new EmbedBuilder()
-        .setColor('#ff03a7')
+        .setColor('#d62828')
         .setAuthor({
           name: server.name,
           iconURL:
             server?.icon.image ??
             'https://cdn.minefort.com/img/item_icons/WHITE_WOOL.png',
         })
-        .setTitle(`🔴   ${server.name} has stopped`)
+        .setTitle(`${server.name} has stopped`)
         .setTimestamp()
         .setFooter({
           text: 'Minefort Utils',
@@ -43,7 +43,6 @@ export default new MinefortEvent({
           avatarURL: discordClient.user?.displayAvatarURL(),
         })
         .catch(async () => {
-          console.log(`Deleting follow ${follow.id}`);
           await prisma.follow.delete({
             where: {
               id: follow.id,

@@ -1,14 +1,14 @@
 import {MinefortEvent} from '../MinefortEvent';
 import {prisma} from '../../../client/prisma/PrismaClient';
-import {EmbedBuilder, underscore, WebhookClient} from 'discord.js';
+import {EmbedBuilder, WebhookClient} from 'discord.js';
 import {discordClient} from '../../../index';
-import {MinefortUtils} from '../../../utils/MinefortUtils';
+import {PlayerUtils} from '../../../utils/PlayerUtils';
 
 export default new MinefortEvent({
   enabled: true,
-  event: 'serverStart',
+  event: 'serverPlayerJoin',
   once: false,
-  execute: async (client, server) => {
+  execute: async (client, server, playerUuid) => {
     const minefortServer = await prisma.minefortServer.findUnique({
       where: {
         serverId: server.id,
@@ -18,27 +18,20 @@ export default new MinefortEvent({
       },
     });
 
-    if (!minefortServer) return;
+    const player = await PlayerUtils.getPlayerByUuid(playerUuid);
+
+    if (!(minefortServer && player)) return;
 
     for (const follow of minefortServer.follows) {
       const webhookClient = new WebhookClient({url: follow.webhookUrl});
 
-      const startedEmbed = new EmbedBuilder()
+      const playerEmbed = new EmbedBuilder()
         .setColor('#80ed99')
         .setAuthor({
-          name: server.name,
-          iconURL:
-            server?.icon.image ??
-            'https://cdn.minefort.com/img/item_icons/WHITE_WOOL.png',
+          name: player.name,
+          iconURL: `https://mc-heads.net/avatar/${player.id}/64`,
         })
-        .setTitle(`${server.name} has started`)
-        .setDescription(
-          `IP: ${underscore(
-            `${server.name}.minefort.com`
-          )}\nSoftware: ${MinefortUtils.getServerSoftware(
-            server.version
-          )}\nVersion: ${MinefortUtils.getServerVersion(server.version)}`
-        )
+        .setTitle(`${player.name} has joined ${server.name}`)
         .setTimestamp()
         .setFooter({
           text: 'Minefort Utils',
@@ -46,7 +39,7 @@ export default new MinefortEvent({
 
       await webhookClient
         .send({
-          embeds: [startedEmbed],
+          embeds: [playerEmbed],
           username: 'Minefort Utils',
           avatarURL: discordClient.user?.displayAvatarURL(),
         })
