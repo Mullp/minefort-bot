@@ -5,8 +5,8 @@ export class HistoryManager {
   public static lastUpdate: Date;
 
   public static async createHistory(servers: Server[]) {
-    // 1 minute cooldown
-    if (this.lastUpdate && Date.now() - this.lastUpdate.getTime() < 1000 * 5) {
+    // 30 seconds cooldown
+    if (this.lastUpdate && Date.now() - this.lastUpdate.getTime() < 1000 * 30) {
       return;
     }
 

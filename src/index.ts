@@ -16,7 +16,17 @@ export const minefortClient = new MinefortClient();
 
   await minefortClient.registerEvents();
 
-  await minefortClient.auth(env.MINEFORT_USERNAME, env.MINEFORT_PASSWORD);
+  const sessionToken = await minefortClient.auth(
+    env.MINEFORT_USERNAME,
+    env.MINEFORT_PASSWORD
+  );
+
+  if (!sessionToken) {
+    console.error('Failed to authenticate with Minefort');
+    throw new Error('Failed to authenticate with Minefort');
+  } else {
+    console.log('Authenticated with Minefort');
+  }
 
   await discordClient.login(env.TOKEN);
 

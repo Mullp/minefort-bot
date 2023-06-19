@@ -2,6 +2,7 @@ import {Command} from '../Command';
 import {inlineCode, SlashCommandBuilder} from 'discord.js';
 import {readFileSync} from 'fs';
 import {minefortClient} from '../../index';
+import {env} from '../../utils/env';
 
 const words = readFileSync('./assets/words.txt', 'utf-8').split('\n');
 
@@ -64,7 +65,17 @@ export default new Command({
             }
             checkedNames.push(randomWord);
 
-            if (await minefortClient.servers.isNameAvailable(randomWord)) {
+            if (
+              await minefortClient.servers
+                .isNameAvailable(randomWord)
+                .catch(() => {
+                  minefortClient.auth(
+                    env.MINEFORT_USERNAME,
+                    env.MINEFORT_PASSWORD
+                  );
+                  return false;
+                })
+            ) {
               return randomWord;
             }
           }

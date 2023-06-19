@@ -2,7 +2,6 @@ import {IMinefortClient} from './IMinefortClient';
 import {Client, ResponseStatus, Server, ServersResponse} from 'minefort';
 import {redis} from '../redis/RedisClient';
 import {EventEmitter} from 'events';
-import {Mixin} from 'ts-mixer';
 import {HistoryManager} from '../../history/HistoryManager';
 import {join} from 'path';
 import {readdirSync} from 'fs';
@@ -17,19 +16,18 @@ export interface MinefortEvents {
   serverPlayerLeave: [server: Server, player: string];
 }
 
-export class MinefortClient
-  extends Mixin(Client, EventEmitter)
-  implements IMinefortClient
-{
+export class MinefortClient extends Client implements IMinefortClient {
   public readonly events: Collection<
     string,
     MinefortEvent<keyof MinefortEvents>
   >;
+  public readonly eventEmitter: EventEmitter;
   private oldResponse: Server[] = [];
 
   constructor() {
     super();
     this.events = new Collection();
+    this.eventEmitter = new EventEmitter();
   }
 
   public async handleServersResponse(servers: Server[]): Promise<void> {
@@ -40,10 +38,10 @@ export class MinefortClient
     for (const server of servers) {
       const oldServer = this.oldResponse.find(s => s.id === server.id);
       if (!oldServer) {
-        this.emit('serverStart', server);
+        this.eventEmitter.emit('serverStart', server);
         if (!server.playerData.online) continue;
         for (const player of server.playerData.online) {
-          this.emit('serverPlayerJoin', server, player);
+          this.eventEmitter.emit('serverPlayerJoin', server, player);
         }
       } else {
         if (!(oldServer.playerData.online && server.playerData.online)) {
@@ -51,22 +49,22 @@ export class MinefortClient
         }
         for (const player of server.playerData.online) {
           if (!oldServer.playerData.online.includes(player)) {
-            this.emit('serverPlayerJoin', server, player);
+            this.eventEmitter.emit('serverPlayerJoin', server, player);
           }
         }
         for (const oldPlayer of oldServer.playerData.online) {
           if (!server.playerData.online.includes(oldPlayer)) {
-            this.emit('serverPlayerLeave', server, oldPlayer);
+            this.eventEmitter.emit('serverPlayerLeave', server, oldPlayer);
           }
         }
       }
     }
     for (const oldServer of this.oldResponse) {
       if (!servers.map(s => s.id).includes(oldServer.id)) {
-        this.emit('serverStop', oldServer);
+        this.eventEmitter.emit('serverStop', oldServer);
         if (!oldServer.playerData.online) continue;
         for (const player of oldServer.playerData.online) {
-          this.emit('serverPlayerLeave', oldServer, player);
+          this.eventEmitter.emit('serverPlayerLeave', oldServer, player);
         }
       }
     }
@@ -89,7 +87,7 @@ export class MinefortClient
       if (event.enabled === false) return;
 
       this.events.set(event.event, event);
-      this[event.once ? 'once' : 'on'](event.event, (...args) =>
+      this.eventEmitter[event.once ? 'once' : 'on'](event.event, (...args) =>
         event.execute(this, ...(args as MinefortEvents[typeof event.event]))
       );
       console.log('[SUCCESS]', file, 'event file loaded.');
