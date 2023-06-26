@@ -7,5 +7,6 @@ export const cronPing = cron.schedule('*/5 * * * *', async () => {
     .getOnlineServers({limit: 500})
     .then(async servers => {
       await HistoryManager.createHistory(servers);
+      await minefortClient.handleServersResponse(servers);
     });
 });
