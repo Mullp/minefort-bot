@@ -1,10 +1,10 @@
-FROM node:20.2.0-alpine3.18 as builder
+FROM arm64v8/node:20.2.0-alpine3.18 as builder
 WORKDIR /app
 COPY . .
 RUN yarn install
 RUN yarn run compile
 
-FROM node:20.2.0-alpine3.18 as final
+FROM arm64v8/node:20.2.0-alpine3.18 as final
 WORKDIR /app
 COPY --from=builder /app/build ./build
 COPY package.json .
